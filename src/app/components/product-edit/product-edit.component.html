@@ -1,0 +1,74 @@
+<h2>Editar Producto</h2>
+
+<form (ngSubmit)="updateProduct()" #productForm="ngForm" enctype="multipart/form-data">
+  <!-- Nombre del Producto -->
+  <div class="mb-3">
+    <label for="name" class="form-label">Nombre:</label>
+    <input
+      id="name"
+      type="text"
+      class="form-control"
+      [(ngModel)]="product.name"
+      name="name"
+      required
+    />
+  </div>
+
+  <!-- Descripción del Producto -->
+  <div class="mb-3">
+    <label for="description" class="form-label">Descripción:</label>
+    <input
+      id="description"
+      type="text"
+      class="form-control"
+      [(ngModel)]="product.description"
+      name="description"
+      required
+    />
+  </div>
+
+  <!-- Precio -->
+  <div class="mb-3">
+    <label for="price" class="form-label">Precio:</label>
+    <input
+      id="price"
+      type="number"
+      class="form-control"
+      [(ngModel)]="product.price"
+      name="price"
+      required
+    />
+  </div>
+
+  <!-- Cliente -->
+  <div class="mb-3">
+    <label for="clientId" class="form-label">Cliente:</label>
+    <select
+      id="clientId"
+      class="form-select"
+      [(ngModel)]="product.clientId"
+      name="clientId"
+      required
+    >
+      <option *ngFor="let client of clients" [value]="client.id">
+        {{ client.nombre }} - {{ client.categoria }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Imagen -->
+  <div class="mb-3">
+    <label for="image" class="form-label">Imagen:</label>
+    <input
+      id="image"
+      type="file"
+      class="form-control"
+      (change)="onImageSelected($event)"
+      name="image"
+    />
+  </div>
+
+  <!-- Botones -->
+  <button type="submit" class="btn btn-primary" [disabled]="!productForm.valid">Actualizar Producto</button>
+  <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
+</form>

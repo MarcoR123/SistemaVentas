@@ -1,0 +1,60 @@
+<h2>Crear Nueva Venta</h2>
+<form (ngSubmit)="onSubmit()" #saleForm="ngForm">
+  <div class="mb-3">
+    <label for="product_id" class="form-label">Producto:</label>
+    <select
+      id="product_id"
+      class="form-select"
+      [(ngModel)]="sale.product_id"
+      name="product_id"
+      required
+    >
+      <option *ngFor="let product of products" [value]="product.id">
+        {{ product.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="quantity" class="form-label">Cantidad:</label>
+    <input
+      id="quantity"
+      type="number"
+      class="form-control"
+      [(ngModel)]="sale.quantity"
+      name="quantity"
+      required
+    />
+  </div>
+
+  <div class="mb-3">
+    <label for="user_id" class="form-label">Vendedor (ID de Usuario):</label>
+    <input
+      id="user_id"
+      type="text"
+      class="form-control"
+      [(ngModel)]="sale.user_id"
+      name="user_id"
+      required
+    />
+  </div>
+
+  <div class="mb-3">
+    <label for="status" class="form-label">Estado:</label>
+    <select
+      id="status"
+      class="form-select"
+      [(ngModel)]="sale.status"
+      name="status"
+      required
+    >
+      <option value="Complete">Complete</option>
+      <option value="Incomplete">Incomplete</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-success" [disabled]="!saleForm.valid">
+    Crear Venta
+  </button>
+  <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
+</form>

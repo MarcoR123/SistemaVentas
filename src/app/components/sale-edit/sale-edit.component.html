@@ -1,0 +1,45 @@
+<form (ngSubmit)="onSubmit()" #saleForm="ngForm" class="container mt-4">
+  <div class="row mb-3">
+    <label for="product_id" class="col-sm-3 col-form-label">ID del Producto:</label>
+    <div class="col-sm-9">
+      <input
+        id="product_id"
+        type="text"
+        [(ngModel)]="sale.products[0].product_id"
+        name="product_id"
+        class="form-control"
+        required
+      />
+    </div>
+  </div>
+  
+  <div class="row mb-3">
+    <label for="quantity" class="col-sm-3 col-form-label">Cantidad:</label>
+    <div class="col-sm-9">
+      <input
+        id="quantity"
+        type="number"
+        [(ngModel)]="sale.products[0].quantity"
+        name="quantity"
+        class="form-control"
+        required
+      />
+    </div>
+  </div>
+  
+  <div class="row mb-3">
+    <label for="status" class="col-sm-3 col-form-label">Estado:</label>
+    <div class="col-sm-9">
+      <select id="status" [(ngModel)]="sale.status" name="status" class="form-control" required>
+        <option value="Complete">Complete</option>
+        <option value="Incomplete">Incomplete</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-sm-12 text-center">
+      <button type="submit" class="btn btn-primary" [disabled]="!saleForm.valid">Guardar Cambios</button>
+    </div>
+  </div>
+</form>

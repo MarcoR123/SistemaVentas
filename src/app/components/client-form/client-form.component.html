@@ -1,0 +1,30 @@
+<div class="container mt-5">
+    <h2 class="text-center">Crear Cliente</h2>
+    <form (ngSubmit)="createClient()">
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre:</label>
+        <input
+          type="text"
+          id="nombre"
+          class="form-control"
+          [(ngModel)]="client.nombre"
+          name="nombre"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="categoria" class="form-label">Categoría:</label>
+        <input
+          type="text"
+          id="categoria"
+          class="form-control"
+          [(ngModel)]="client.categoria"
+          name="categoria"
+          required
+        />
+      </div>
+      <button type="submit" class="btn btn-primary">Crear Cliente</button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
+    </form>
+  </div>
+  

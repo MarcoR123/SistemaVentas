@@ -1,0 +1,37 @@
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Lista de Productos</h2>
+
+<table class="table table-hover table-bordered mt-3 custom-table">
+  <thead class="thead-light">
+    <tr>
+      <th>Imagen</th>
+      <th>Nombre</th>
+      <th>Descripción</th>
+      <th>Precio</th>
+      <th>Marca</th> <!-- Nuevo -->
+      <th>Categoría</th> <!-- Nuevo -->
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let product of products">
+      <td class="text-center">
+        <img *ngIf="product.image" [src]="product.image" alt="{{product.name}}" class="img-fluid rounded" style="width: 180px; height: 180px; object-fit: cover;">
+        <span *ngIf="!product.image" class="text-muted">Sin imagen</span>
+      </td>
+      <td>{{ product.name }}</td>
+      <td>{{ product.description }}</td>
+      <td>{{ product.price | currency }}</td>
+      <td>{{ product.clientName }}</td> <!-- Nuevo -->
+      <td>{{ product.clientCategory }}</td> <!-- Nuevo -->
+      <td class="text-center">
+        <button *ngIf="product.id" (click)="editProduct(product.id)" class="btn btn-primary btn-sm">Editar</button>
+        <button *ngIf="product.id" (click)="deleteProduct(product.id)" class="btn btn-danger btn-sm">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<button routerLink="/products/new" class="btn btn-success mt-3">Crear Producto</button>
+</div>

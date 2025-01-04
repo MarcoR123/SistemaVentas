@@ -1,0 +1,94 @@
+<div class="container mt-5">
+    <h2 class="text-center">Editar Usuario</h2>
+  
+    <form (ngSubmit)="updateUser()" #editUserForm="ngForm">
+      <div class="mb-3">
+        <label for="name" class="form-label">Nombre:</label>
+        <input
+          id="name"
+          type="text"
+          class="form-control"
+          [(ngModel)]="user.name"
+          name="name"
+          required
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="email" class="form-label">Correo Electrónico:</label>
+        <input
+          id="email"
+          type="email"
+          class="form-control"
+          [(ngModel)]="user.email"
+          name="email"
+          required
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="password" class="form-label">Contraseña:</label>
+        <input
+          id="password"
+          type="password"
+          class="form-control"
+          [(ngModel)]="user.password"
+          name="password"
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="role" class="form-label">Rol:</label>
+        <select
+          id="role"
+          class="form-control"
+          [(ngModel)]="user.role"
+          name="role"
+          required
+        >
+          <option value="" disabled>Seleccione un rol</option>
+          <option value="Supervisor">Supervisor</option>
+          <option value="Vendedor">Vendedor</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="assigned_region" class="form-label">Región Asignada:</label>
+        <select
+          id="assigned_region"
+          class="form-control"
+          [(ngModel)]="user.assigned_region"
+          name="assigned_region"
+          required
+        >
+          <option value="" disabled>Seleccione una región</option>
+          <option value="Quito">Quito</option>
+          <option value="Guayaquil">Guayaquil</option>
+          <option value="Cuenca">Cuenca</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="clientId" class="form-label">Cliente:</label>
+        <select
+          id="clientId"
+          class="form-control"
+          [(ngModel)]="user.clientId"
+          name="clientId"
+          required
+        >
+          <option value="" disabled>Seleccione un cliente</option>
+          <option *ngFor="let client of clients" [value]="client.id">
+            {{ client.nombre }}
+          </option>
+        </select>
+      </div>
+      
+  
+      <button type="submit" class="btn btn-primary" [disabled]="!editUserForm.valid">
+        Actualizar Usuario
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
+    </form>
+  </div>
+  

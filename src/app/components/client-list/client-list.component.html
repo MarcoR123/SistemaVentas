@@ -1,0 +1,29 @@
+<div class="container mt-5">
+    <h2 class="text-center">Lista de Clientes</h2>
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+    
+    <div class="d-flex justify-content-end mb-3">
+      <button class="btn btn-success" (click)="createClient()">Crear Cliente</button>
+    </div>
+    
+    <table class="table table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of clients">
+          <td>{{ client.nombre }}</td>
+          <td>{{ client.categoria }}</td>
+          <td>
+            <button class="btn btn-primary btn-sm" (click)="editClient(client.id)">Editar</button>
+            <button class="btn btn-danger btn-sm" (click)="deleteClient(client.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  

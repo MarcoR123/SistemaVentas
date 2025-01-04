@@ -1,0 +1,45 @@
+<table class="table table-bordered">
+  <thead class="thead-light">
+    <tr>
+      <th>Imagen</th>
+      <th>Nombre</th>
+      <th>Cantidad</th>
+      <th>Precio</th>
+      <th>Cliente</th>
+      <th>Categoría Cliente</th>
+      <th>Vendedor</th>
+      <th>Total</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let sale of sales">
+      <!-- Imagen del producto -->
+      <td>
+        <img [src]="sale.products[0]?.product_image" alt="Imagen del producto" style="max-width: 200px; max-height: 200px;" />
+      </td>
+      <!-- Nombre del producto -->
+      <td>{{ sale.products[0]?.product_name || 'N/A' }}</td>
+      <!-- Cantidad -->
+      <td>{{ sale.products[0]?.quantity || 'N/A' }}</td>
+      <!-- Precio -->
+      <td>{{ sale.products[0]?.price | currency }}</td>
+      <!-- Cliente -->
+      <td>{{ sale.products[0]?.client_name || 'N/A' }}</td>
+      <!-- Categoría del cliente -->
+      <td>{{ sale.products[0]?.client_category || 'N/A' }}</td>
+      <!-- Vendedor -->
+      <td>{{ sale.user_name }}</td>
+      <!-- Total -->
+      <td>{{ sale.total_price | currency }}</td>
+      <!-- Estado -->
+      <td>{{ sale.status }}</td>
+      <!-- Acciones -->
+      <td>
+        <button class="btn btn-primary btn-sm" (click)="editSale(sale.id)">Editar</button>
+        <button class="btn btn-danger btn-sm" (click)="deleteSale(sale.id)">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
