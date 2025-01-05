@@ -1,1 +1,72 @@
-<p>reports works!</p>
+<div class="container mt-5">
+    <h2 class="text-center">Visualización y Descarga de Informes</h2>
+  
+    <!-- Selección de Informe -->
+    <div class="mb-3">
+      <label for="reportType">Selecciona el tipo de informe:</label>
+      <select id="reportType" [(ngModel)]="selectedReport" class="form-select" (change)="filterData()">
+        <option value="ventas">Informe de Ventas</option>
+        <option value="vendedores">Informe de Vendedores y su Marca</option>
+      </select>
+    </div>
+  
+    <!-- Filtros de Fecha y Vendedor -->
+    <div class="row">
+      <div class="col-md-4">
+        <label for="startDate">Fecha Inicio:</label>
+        <input type="date" [(ngModel)]="startDate" class="form-control" />
+      </div>
+      <div class="col-md-4">
+        <label for="endDate">Fecha Fin:</label>
+        <input type="date" [(ngModel)]="endDate" class="form-control" />
+      </div>
+      <div class="col-md-4">
+        <label for="vendedor">Seleccionar Vendedor:</label>
+        <select [(ngModel)]="selectedVendedor" class="form-select">
+          <option *ngFor="let vendedor of vendedores">{{ vendedor }}</option>
+        </select>
+      </div>
+    </div>
+  
+    <button (click)="filterData()" class="btn btn-primary mt-3">Filtrar</button>
+  
+    <!-- Tabla de datos -->
+    <div *ngIf="filteredData.length > 0">
+      <table class="table mt-4">
+        <thead class="thead-dark">
+          <tr>
+            <th *ngIf="selectedReport === 'ventas'">Fecha de Venta</th>
+            <th>Vendedor</th>
+            <th *ngIf="selectedReport === 'ventas'">Producto</th>
+            <th *ngIf="selectedReport === 'ventas'">Cantidad</th>
+            <th *ngIf="selectedReport === 'ventas'">Precio Total</th>
+            <th *ngIf="selectedReport === 'ventas'">Factura</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sale of filteredData">
+            <td *ngIf="selectedReport === 'ventas'">{{ sale.date | date }}</td>
+            <td>{{ sale.user_name }}</td>
+            <td *ngIf="selectedReport === 'ventas'">{{ sale.products[0]?.product_name }}</td>
+            <td *ngIf="selectedReport === 'ventas'">{{ sale.products[0]?.quantity }}</td>
+            <td *ngIf="selectedReport === 'ventas'">{{ sale.total_price | currency }}</td>
+            <td *ngIf="selectedReport === 'ventas'">
+              <a *ngIf="sale.attachments" [href]="sale.attachments" target="_blank">Ver Factura</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <div *ngIf="filteredData.length === 0" class="alert alert-warning mt-4">
+      No se encontraron datos para este informe.
+    </div>
+
+    <p *ngIf="noDataMessage" class="alert alert-warning">{{ noDataMessage }}</p>
+
+  
+    <!-- Botones de exportación -->
+    <button (click)="exportToExcel()" class="btn btn-success mt-3">Exportar a Excel</button>
+    <button (click)="exportToPDF()" class="btn btn-danger mt-3">Exportar a PDF</button>
+  </div>
+  

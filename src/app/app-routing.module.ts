@@ -15,6 +15,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { ClientListComponent } from './components/client-list/client-list.component';
 import { ClientFormComponent } from './components/client-form/client-form.component';
 import { ClientEditComponent } from './components/client-edit/client-edit.component';
+import { ReportsComponent } from './components/reports/reports.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -84,6 +85,18 @@ const routes: Routes = [
     component: ClientFormComponent,
     canActivate: [AuthGuard],
     data: { role: ['Administrador'] }, // Permitido solo para Administrador
+  },
+  {
+    path: 'clients/edit/:id',
+    component: ClientEditComponent,
+    canActivate: [AuthGuard],
+    data: { role: ['Administrador'] }, // Permitido solo para Administrador
+  },
+  {
+    path: 'reports',
+    component: ReportsComponent,
+    canActivate: [AuthGuard],
+    data: { role: ['Administrador', 'Supervisor'] }, // Permitido para Administrador y Supervisor
   },
   { path: 'unauthorized', component: UnauthorizedComponent },
   { path: '**', redirectTo: '/login' },

@@ -56,6 +56,23 @@ export class ProductService {
 
   // Obtener productos por cliente
   getProductsByClientId(clientId: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/GetProductsByClientId/${clientId}`);
+    return this.http.get<Product[]>(`${this.apiUrl}/GetProductsByClientId/${clientId}`).pipe(
+      mergeMap((products) => {
+        return from(products).pipe(
+          mergeMap((product) =>
+            this.http.get<any>(`${this.clientsUrl}/${product.clientId}`).pipe(
+              map((client) => {
+                product.clientName = client.nombre;
+                product.clientCategory = client.categoria;
+                return product;
+              })
+            )
+          ),
+          toArray()
+        );
+      })
+    );
   }
+  
+  
 }

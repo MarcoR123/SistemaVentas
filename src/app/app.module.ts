@@ -22,6 +22,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { ClientListComponent } from './components/client-list/client-list.component';
 import { ClientFormComponent } from './components/client-form/client-form.component';
 import { ClientEditComponent } from './components/client-edit/client-edit.component';
+import { ReportsComponent } from './components/reports/reports.component';  // Importar componente de informes
 
 
 
@@ -43,7 +44,8 @@ import { ClientEditComponent } from './components/client-edit/client-edit.compon
     UnauthorizedComponent,
     ClientListComponent,
     ClientFormComponent,
-    ClientEditComponent
+    ClientEditComponent,
+    ReportsComponent
   ],
   imports: [
     BrowserModule,

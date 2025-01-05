@@ -25,6 +25,7 @@ export class AuthGuard implements CanActivate {
     }
 
     // Obtener el rol del usuario y los roles permitidos para la ruta
+    
     const userRole = this.authService.getRole() ?? ''; // Asignar un valor por defecto en caso de null
     const allowedRoles = route.data['role'] as string[]; // Roles permitidos para la ruta
 

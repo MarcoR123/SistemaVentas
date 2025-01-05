@@ -1,0 +1,11 @@
+.container {
+    padding: 20px;
+  }
+  .table {
+    margin-top: 20px;
+  }
+  thead {
+    background-color: #343a40;
+    color: white;
+  }
+  

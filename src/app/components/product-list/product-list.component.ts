@@ -14,8 +14,19 @@ export class ProductListComponent implements OnInit {
   constructor(private productService: ProductService, private router: Router) {}
 
   ngOnInit(): void {
-    this.loadProducts();
+    const clientId = localStorage.getItem('clientId');
+    if (clientId) {
+      this.productService.getProductsByClientId(clientId).subscribe({
+        next: (products) => {
+          this.products = products;
+        },
+        error: (error) => {
+          console.error('Error al cargar los productos:', error);
+        },
+      });
+    }
   }
+  
 
   loadProducts(): void {
     this.productService.getProducts().subscribe({

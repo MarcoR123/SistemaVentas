@@ -12,8 +12,19 @@ export class SaleListComponent implements OnInit {
   constructor(private saleService: SaleService, private router: Router) {}
 
   ngOnInit(): void {
-    this.loadSales();
+    const clientId = localStorage.getItem('clientId');
+    if (clientId) {
+      this.saleService.getSalesByClientId(clientId).subscribe({
+        next: (sales) => {
+          this.sales = sales;
+        },
+        error: (error) => {
+          console.error('Error al cargar las ventas:', error);
+        },
+      });
+    }
   }
+  
 
   loadSales(): void {
     this.saleService.getSales().subscribe({

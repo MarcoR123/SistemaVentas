@@ -25,6 +25,13 @@ export class SaleService {
     
   }
 
+  getSalesByClientId(clientId: string): Observable<Sale[]> {
+    return this.http.get<Sale[]>(`${this.salesUrl}/client/${clientId}`).pipe(
+      switchMap(sales => this.addDetailsToSales(sales))
+    );
+  }
+  
+
   private addDetailsToSales(sales: Sale[]): Observable<Sale[]> {
     return from(sales).pipe(
       mergeMap((sale) =>

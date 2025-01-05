@@ -8,6 +8,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class AuthService {
+  [x: string]: any;
   private apiUrl = 'https://authmicroservices2024.azurewebsites.net/api/Auth'; 
 
 
@@ -37,7 +38,7 @@ export class AuthService {
     return currentUser.role === role;
   }  
 
-  hasClientId(clientId: string): boolean {
-    return localStorage.getItem('clientId') === clientId;
+  getClientId(): string | null {
+    return localStorage.getItem('clientId');
   }
 }

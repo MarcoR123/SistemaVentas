@@ -23,5 +23,6 @@ export interface Sale {
   status: string;
   geolocation?: { latitude: string; longitude: string };
   attachments?: string;
+  date: Date;
 
 }
