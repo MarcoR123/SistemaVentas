@@ -1,36 +1,43 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin, from, of } from 'rxjs';
 import { tap, switchMap, map, mergeMap, toArray } from 'rxjs/operators';
-import { Sale, SaleProduct } from '../models/sale.model';
+import { Sale } from '../models/sale.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SaleService {
-  private salesUrl = 'https://salesmicroservices2024.azurewebsites.net/api/Sales';
+  private salesUrl = 'https://salesmicroservices2025.azurewebsites.net/api/Sales';
   private productsUrl = 'https://productmicroservices.azurewebsites.net/api/Products';
   private usersUrl = 'https://authmicroservices2024.azurewebsites.net/api/Users';
   private clientsUrl = 'https://clientmicroservice2024.azurewebsites.net/api/Clients';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
+  // Obtener todas las ventas o por clientId según el rol
   getSales(): Observable<Sale[]> {
-    return this.http.get<Sale[]>(this.salesUrl).pipe(
-      tap((response: any) => console.log("Response from API:", response)),
-      
-      switchMap(sales => this.addDetailsToSales(sales))
-      
-    );
-    
-  }
+    const token = localStorage.getItem('token'); // Obtener el token del localStorage
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
-  getSalesByClientId(clientId: string): Observable<Sale[]> {
-    return this.http.get<Sale[]>(`${this.salesUrl}/client/${clientId}`).pipe(
+    const clientId = this.authService.getClientId(); // Obtener clientId
+    const role = this.authService.getRole(); // Obtener el rol del usuario
+
+    // Si el rol es "Administrador", obtener todas las ventas sin filtro
+    if (role === 'Administrador') {
+      return this.http.get<Sale[]>(`${this.salesUrl}`, { headers }).pipe(
+        tap((response) => console.log("Ventas para Administrador:", response)),
+        switchMap(sales => this.addDetailsToSales(sales))
+      );
+    }
+
+    // Si no es administrador, filtrar por clientId
+    return this.http.get<Sale[]>(`${this.salesUrl}/client/${clientId}`, { headers }).pipe(
+      tap((response) => console.log(`Ventas para cliente ${clientId}:`, response)),
       switchMap(sales => this.addDetailsToSales(sales))
     );
   }
-  
 
   private addDetailsToSales(sales: Sale[]): Observable<Sale[]> {
     return from(sales).pipe(
@@ -44,19 +51,13 @@ export class SaleService {
           switchMap(({ productDetails, userDetails }) => {
             if (productDetails?.clientId) {
               return this.http.get<any>(`${this.clientsUrl}/${productDetails.clientId}`).pipe(
-                map((clientDetails) => {
-                  console.log('Product Details:', productDetails); // Aquí se loguean los detalles del producto
-                  console.log('Image URL:', productDetails?.image_url); // Aquí se loguea la URL de la imagen
-                  return {
-                    productDetails,
-                    userDetails,
-                    clientDetails,
-                  };
-                })
+                map((clientDetails) => ({
+                  productDetails,
+                  userDetails,
+                  clientDetails,
+                }))
               );
             } else {
-              console.log('Product Details:', productDetails); // Aquí se loguean los detalles del producto
-              console.log('Image URL:', productDetails?.image_url); // Aquí se loguea la URL de la imagen
               return of({
                 productDetails,
                 userDetails,
@@ -65,29 +66,12 @@ export class SaleService {
             }
           }),
           map(({ productDetails, userDetails, clientDetails }) => {
-            // Asignar datos del producto
             sale.products[0].product_name = productDetails?.name || 'Producto Desconocido';
-
-             sale.products[0].product_image = productDetails?.image
-    ? productDetails.image // Usa directamente la imagen Base64 si está disponible
-    : 'assets/default-image.jpg'; // Imagen por defecto si no existe
-
-  
-            // Asignar datos del usuario
+            sale.products[0].product_image = productDetails?.image || 'assets/default-image.jpg';
             sale.user_name = userDetails?.name || 'Usuario Desconocido';
-  
-            // Asignar datos del cliente (si existen)
-            if (clientDetails) {
-              sale.products[0].client_name = clientDetails.nombre || 'Cliente Desconocido';
-              sale.products[0].client_category = clientDetails.categoria || 'Categoría No Definida';
-            } else {
-              sale.products[0].client_name = 'N/A';
-              sale.products[0].client_category = 'N/A';
-            }
-  
-            // Calcular el precio total
+            sale.products[0].client_name = clientDetails?.nombre || 'Cliente Desconocido';
+            sale.products[0].client_category = clientDetails?.categoria || 'Categoría No Definida';
             sale.total_price = sale.products.reduce((total, p) => total + p.price * p.quantity, 0);
-  
             return sale;
           })
         )
@@ -95,9 +79,6 @@ export class SaleService {
       toArray()
     );
   }
-  
-  
-  
 
   getSaleById(id: string): Observable<Sale> {
     return this.http.get<Sale>(`${this.salesUrl}/${id}`);
@@ -105,39 +86,14 @@ export class SaleService {
 
   createSale(newSale: any): Observable<any> {
     const formData = new FormData();
-
-    if (newSale.product_id) {
-      formData.append('product_id', newSale.product_id);
-    }
-
-    if (newSale.quantity !== undefined && newSale.quantity !== null) {
-      formData.append('quantity', newSale.quantity.toString());
-    }
-
-    if (newSale.user_id) {
-      formData.append('user_id', newSale.user_id);
-    }
-
-    if (newSale.status) {
-      formData.append('status', newSale.status);
-    }
-
-    if (newSale.latitude !== undefined) {
-      formData.append('latitude', newSale.latitude.toString());
-    }
-
-    if (newSale.longitude !== undefined) {
-      formData.append('longitude', newSale.longitude.toString());
-    }
-
-    if (newSale.attachments) {
-      formData.append('attachments', newSale.attachments);
-    }
-
-    if (newSale.clientId) {
-      formData.append('clientId', newSale.clientId);
-    }
-
+    formData.append('product_id', newSale.product_id || '');
+    formData.append('quantity', newSale.quantity?.toString() || '');
+    formData.append('user_id', newSale.user_id || '');
+    formData.append('status', newSale.status || '');
+    formData.append('latitude', newSale.latitude?.toString() || '');
+    formData.append('longitude', newSale.longitude?.toString() || '');
+    formData.append('attachments', newSale.attachments || '');
+    formData.append('clientId', newSale.clientId || '');
     return this.http.post(`${this.salesUrl}`, formData);
   }
 
@@ -146,15 +102,22 @@ export class SaleService {
     formData.append('product_id', updatedSale.product_id);
     formData.append('quantity', updatedSale.quantity.toString());
     formData.append('status', updatedSale.status);
-
-    if (updatedSale.clientId) {
-      formData.append('clientId', updatedSale.clientId);
-    }
-
+    formData.append('clientId', updatedSale.clientId || '');
     return this.http.patch<void>(`${this.salesUrl}/${id}`, formData);
   }
 
   deleteSale(id: string): Observable<void> {
     return this.http.delete<void>(`${this.salesUrl}/${id}`);
   }
+
+  getSalesByClientId(clientId: string): Observable<Sale[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  
+    return this.http.get<Sale[]>(`${this.salesUrl}/client/${clientId}`, { headers }).pipe(
+      tap((response) => console.log(`Ventas para el clientId ${clientId}:`, response)),
+      switchMap(sales => this.addDetailsToSales(sales))
+    );
+  }
+  
 }

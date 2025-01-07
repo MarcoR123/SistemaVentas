@@ -16,6 +16,7 @@ import { ClientListComponent } from './components/client-list/client-list.compon
 import { ClientFormComponent } from './components/client-form/client-form.component';
 import { ClientEditComponent } from './components/client-edit/client-edit.component';
 import { ReportsComponent } from './components/reports/reports.component';
+import { CustomerSupportService } from './services/customer-support.service';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },

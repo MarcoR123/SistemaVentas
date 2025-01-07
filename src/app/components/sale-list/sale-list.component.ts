@@ -8,28 +8,24 @@ import { SaleService } from '../../services/sale.service';
 })
 export class SaleListComponent implements OnInit {
   sales: any[] = [];
+  errorMessage: string | null = null;
 
   constructor(private saleService: SaleService, private router: Router) {}
 
   ngOnInit(): void {
-    const clientId = localStorage.getItem('clientId');
-    if (clientId) {
-      this.saleService.getSalesByClientId(clientId).subscribe({
-        next: (sales) => {
-          this.sales = sales;
-        },
-        error: (error) => {
-          console.error('Error al cargar las ventas:', error);
-        },
-      });
-    }
+    this.loadSales(); // Llama al método general que verifica el rol
   }
-  
 
   loadSales(): void {
     this.saleService.getSales().subscribe({
-      next: (data) => (this.sales = data),
-      error: (err) => console.error('Error al cargar las ventas:', err),
+      next: (data) => {
+        this.sales = data;
+        this.errorMessage = null;
+      },
+      error: (err) => {
+        console.error('Error al cargar las ventas:', err);
+        this.errorMessage = 'Hubo un error al cargar las ventas.';
+      }
     });
   }
 
@@ -45,8 +41,8 @@ export class SaleListComponent implements OnInit {
     if (confirm('¿Estás seguro de que deseas eliminar esta venta?')) {
       this.saleService.deleteSale(id).subscribe({
         next: () => {
+          this.sales = this.sales.filter(sale => sale.id !== id);
           alert('Venta eliminada con éxito.');
-          this.loadSales();
         },
         error: (err) => console.error('Error al eliminar la venta:', err),
       });

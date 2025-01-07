@@ -14,19 +14,8 @@ export class ProductListComponent implements OnInit {
   constructor(private productService: ProductService, private router: Router) {}
 
   ngOnInit(): void {
-    const clientId = localStorage.getItem('clientId');
-    if (clientId) {
-      this.productService.getProductsByClientId(clientId).subscribe({
-        next: (products) => {
-          this.products = products;
-        },
-        error: (error) => {
-          console.error('Error al cargar los productos:', error);
-        },
-      });
-    }
+    this.loadProducts(); // Llama directamente al método que valida el rol
   }
-  
 
   loadProducts(): void {
     this.productService.getProducts().subscribe({
@@ -51,13 +40,11 @@ export class ProductListComponent implements OnInit {
     if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       this.productService.deleteProduct(id).subscribe({
         next: () => {
-          // Remueve el producto de la lista sin necesidad de recargar
           this.products = this.products.filter(product => product.id !== id);
           alert("Producto eliminado exitosamente");
         },
         error: (error) => {
-          // Registra el error en la consola sin mostrar una alerta
-          console.warn("Error al eliminar el producto (pero el producto ya fue eliminado):", error);
+          console.warn("Error al eliminar el producto:", error);
           this.products = this.products.filter(product => product.id !== id);
         }
       });

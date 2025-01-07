@@ -15,6 +15,7 @@
         <th>Correo Electrónico</th>
         <th>Rol</th>
         <th>Región Asignada</th>
+        <th>Cliente</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -24,6 +25,7 @@
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>{{ user.assigned_region }}</td>
+        <td>{{ user.clientName }}</td>
         <td>
           <!-- Mostrar el botón de editar solo para Admin y Supervisor -->
           <button  (click)="editUser(user.id)" class="btn btn-primary btn-sm">
