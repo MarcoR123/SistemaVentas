@@ -1,0 +1,75 @@
+<div class="container mt-5">
+    <h1 class="text-center">Dashboard de Estadísticas de Ventas 📊</h1>
+  
+    <!-- Filtros -->
+    <div class="row mt-4">
+      <div class="col-md-4">
+        <label>Seleccionar Región:</label>
+        <select [(ngModel)]="selectedRegion" class="form-control">
+          <option value="Todos">Todos</option>
+          <option *ngFor="let region of regions">{{ region }}</option>
+        </select>
+      </div>
+  
+      <div class="col-md-4">
+        <label>Fecha de Inicio:</label>
+        <input type="date" [(ngModel)]="startDate" class="form-control" />
+      </div>
+  
+      <div class="col-md-4">
+        <label>Fecha de Fin:</label>
+        <input type="date" [(ngModel)]="endDate" class="form-control" />
+      </div>
+  
+      <div class="col-md-12 text-center mt-3">
+        <button (click)="filterData()" class="btn btn-primary">Aplicar Filtros</button>
+      </div>
+    </div>
+  
+    <!-- Tarjetas de Resumen -->
+    <div class="row mt-5">
+      <div class="col-md-4">
+        <div class="card shadow text-center">
+          <div class="card-header bg-primary text-white">Vendedor con Más Ventas</div>
+          <div class="card-body">
+            <h5>{{ topSeller?.name || 'N/A' }}</h5>
+            <p>Total: {{ topSeller?.totalSales || 0 }} ventas</p>
+          </div>
+        </div>
+      </div>
+  
+      <div class="col-md-4">
+        <div class="card shadow text-center">
+          <div class="card-header bg-success text-white">Marca Más Vendida</div>
+          <div class="card-body">
+            <h5>{{ topBrand?.brand || 'N/A' }}</h5>
+            <p>Total: {{ topBrand?.sales || 0 }} ventas</p>
+          </div>
+        </div>
+      </div>
+  
+      <div class="col-md-4">
+        <div class="card shadow text-center">
+          <div class="card-header bg-info text-white">Producto Más Vendido</div>
+          <div class="card-body">
+            <h5>{{ topProduct?.name || 'N/A' }}</h5>
+            <p>Total: {{ topProduct?.sales || 0 }} unidades</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Gráficos -->
+    <div class="row mt-5">
+      <div class="col-md-6">
+        <h4 class="text-center">Ventas por Región</h4>
+        <canvas baseChart [data]="salesByRegionData" [options]="chartOptions" chartType="bar"></canvas>
+      </div>
+  
+      <div class="col-md-6">
+        <h4 class="text-center">Ventas por Vendedor</h4>
+        <canvas baseChart [data]="salesBySellerData" [options]="chartOptions" chartType="doughnut"></canvas>
+      </div>
+    </div>
+  </div>
+  

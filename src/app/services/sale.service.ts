@@ -119,5 +119,25 @@ export class SaleService {
       switchMap(sales => this.addDetailsToSales(sales))
     );
   }
+
+  getSalesByUserId(userId: string): Observable<Sale[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  
+    return this.http.get<Sale[]>(`${this.salesUrl}/user/${userId}`, { headers }).pipe(
+      tap((response) => console.log(`Ventas para el userId ${userId}:`, response)),
+      switchMap(sales => this.addDetailsToSales(sales))
+    );
+  }
+
+  getSalesByProductId(productId: string): Observable<Sale[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  
+    return this.http.get<Sale[]>(`${this.salesUrl}/product/${productId}`, { headers }).pipe(
+      tap((response) => console.log(`Ventas para el productId ${productId}:`, response)),
+      switchMap(sales => this.addDetailsToSales(sales))
+    );
+  }
   
 }

@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { User } from '../models/user.model';
-import { from, map, mergeMap, toArray } from 'rxjs';
+import { from, map, mergeMap, toArray, switchMap } from 'rxjs';
+import { SaleService } from './sale.service';
+import { catchError } from 'rxjs/operators';
+
 
 
 @Injectable({
@@ -11,8 +14,9 @@ import { from, map, mergeMap, toArray } from 'rxjs';
 export class UserService {
   private apiUrl = 'https://authmicroservices2024.azurewebsites.net/api/Users';
   private clientsUrl = 'https://clientmicroservice2024.azurewebsites.net/api/Clients'; 
+  private salesUrl = 'https://salesmicroservices2024.azurewebsites.net/api/Sales';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private saleService : SaleService ) {}
 
   getUsers(): Observable<User[]> {
       return this.http.get<User[]>(`${this.apiUrl}`).pipe(
@@ -54,8 +58,24 @@ export class UserService {
   }
 
   deleteUser(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.saleService.getSalesByUserId(id).pipe(
+      catchError((error) => {
+        if (error.status === 404) {
+          return of([]); // Retorna una lista vacía si no se encuentran ventas
+        }
+        throw error; // Lanza otros errores que no sean 404
+      }),
+      map((sales) => {
+        if (sales.length > 0) {
+          throw new Error('No se puede eliminar el usuario. Existen ventas asociadas.');
+        }
+        return;
+      }),
+      switchMap(() => this.http.delete<void>(`${this.apiUrl}/${id}`))
+    );
   }
+  
+  
 
   getUsersByClientId(clientId: string): Observable<User[]> {
       return this.http.get<User[]>(`${this.apiUrl}/GetUsersByClientId/${clientId}`).pipe(

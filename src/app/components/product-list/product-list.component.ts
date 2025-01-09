@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
+
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
@@ -44,6 +45,7 @@ export class ProductListComponent implements OnInit {
           alert("Producto eliminado exitosamente");
         },
         error: (error) => {
+          alert(error.message);
           console.warn("Error al eliminar el producto:", error);
           this.products = this.products.filter(product => product.id !== id);
         }

@@ -58,6 +58,7 @@ export class UserListComponent implements OnInit {
           alert("Usuario eliminado exitosamente");
         },
         error: (error) => {
+          alert(error.message);
           console.warn("Error al eliminar el usuario:", error);
           alert("Error al eliminar el usuario");
         }

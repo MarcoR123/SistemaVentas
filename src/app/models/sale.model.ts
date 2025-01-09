@@ -21,7 +21,7 @@ export interface Sale {
   user_id: string;
   user_name?: string;  
   status: string;
-  geolocation?: { latitude: string; longitude: string };
+  geolocation: { latitude: number; longitude: number };
   attachments?: string;
   date: Date;
 

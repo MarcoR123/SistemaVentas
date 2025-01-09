@@ -1,123 +1,169 @@
-<div class="container mt-5">
-  <h2 class="text-center">Visualización y Descarga de Informes</h2>
+<div class="container py-5">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white text-center">
+      <h2 class="mb-0">Visualización y Descarga de Informes</h2>
+    </div>
+    <div class="card-body">
+      <!-- Selección de Informe -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="reportType" class="form-label fw-bold">Selecciona el tipo de informe:</label>
+          <select id="reportType" [(ngModel)]="selectedReport" class="form-select" (change)="loadReportData()">
+            <option value="ventas">Informe de Ventas</option>
+            <option value="vendedores">Informe de Vendedores</option>
+            <option value="soporte">Informe de Soporte al Cliente</option>
+          </select>
+        </div>
+      </div>
 
-  <!-- Selección de Informe -->
-  <div class="mb-3">
-    <label for="reportType">Selecciona el tipo de informe:</label>
-    <select id="reportType" [(ngModel)]="selectedReport" class="form-select" (change)="loadReportData()">
-      <option value="ventas">Informe de Ventas</option>
-      <option value="vendedores">Informe de Vendedores y su Marca</option>
-      <option value="soporte">Informe de Soporte al Cliente</option>
-    </select>
+      <!-- Filtros -->
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label for="startDate" class="form-label fw-bold">Fecha Inicio:</label>
+          <input type="date" [(ngModel)]="startDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+          <label for="endDate" class="form-label fw-bold">Fecha Fin:</label>
+          <input type="date" [(ngModel)]="endDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+          <label for="vendedor">Seleccionar Vendedor:</label>
+          <select [(ngModel)]="selectedVendedor" class="form-select">
+            <option *ngFor="let vendedor of vendedores">{{ vendedor }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="client">Seleccionar Cliente:</label>
+  <select [(ngModel)]="selectedClientName" class="form-select">
+    <option *ngFor="let client of clientes">{{ client }}</option>
+  </select>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button (click)="filterData()" class="btn btn-primary">
+          <i class="bi bi-filter"></i> Filtrar
+        </button>
+      </div>
+    </div>
   </div>
-
-  <!-- Filtros -->
-  <div class="row">
-    <div class="col-md-4">
-      <label for="startDate">Fecha Inicio:</label>
-      <input type="date" [(ngModel)]="startDate" class="form-control" />
-    </div>
-    <div class="col-md-4">
-      <label for="endDate">Fecha Fin:</label>
-      <input type="date" [(ngModel)]="endDate" class="form-control" />
-    </div>
-    <div class="col-md-4">
-      <label for="vendedor">Seleccionar Vendedor:</label>
-      <select [(ngModel)]="selectedVendedor" class="form-select">
-        <option *ngFor="let vendedor of vendedores">{{ vendedor }}</option>
-      </select>
-    </div>
-    <div class="col-md-4 mt-2">
-      <label for="client">Seleccionar Cliente:</label>
-      <select [(ngModel)]="selectedClientName" class="form-select">
-        <option *ngFor="let client of clientes">{{ client }}</option>
-      </select>
-    </div>
-  </div>
-
-  <button (click)="filterData()" class="btn btn-primary mt-3">Filtrar</button>
 
   <!-- Tabla de datos -->
-  <div *ngIf="filteredData.length > 0">
-    <table class="table mt-4">
-      <thead class="thead-dark">
-        <!-- Cabeceras de Ventas -->
-        <tr *ngIf="selectedReport === 'ventas'">
-          <th>Fecha de Venta</th>
-          <th>Producto</th>
-          <th>Cliente</th>
-          <th>Vendedor</th>
-          <th>Cantidad</th>
-          <th>Precio Total</th>
-        </tr>
+  <div class="card mt-4 shadow-sm border-0">
+    <div class="card-body">
+      <div *ngIf="filteredData.length > 0" class="table-responsive">
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark text-center">
+            <!-- Cabeceras de Ventas -->
+            <tr *ngIf="selectedReport === 'ventas'">
+              <th>Fecha de Venta</th>
+              <th>Producto</th>
+              <th>Cliente</th>
+              <th>Categoría</th>
+              <th>Vendedor</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Latitud</th>
+              <th>Longitud</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Adjunto</th>
+            </tr>
 
-        <!-- Cabeceras de Vendedores -->
-        <tr *ngIf="selectedReport === 'vendedores'">
-          <th>Nombre</th>
-          <th>Correo Electrónico</th>
-          <th>Rol</th>
-          <th>Región Asignada</th>
-          <th>Cliente</th>
-        </tr>
+            <!-- Cabeceras de Vendedores -->
+            <tr *ngIf="selectedReport === 'vendedores'">
+              <th>Nombre</th>
+              <th>Correo Electrónico</th>
+              <th>Rol</th>
+              <th>Región Asignada</th>
+              <th>Cliente</th>
+            </tr>
 
-        <!-- Cabeceras de Soporte al Cliente -->
-        <tr *ngIf="selectedReport === 'soporte'">
-          <th>Fecha</th>
-          <th>Producto</th>
-          <th>Cliente</th>
-          <th>Usuario</th>
-          <th>Comentarios</th>
-          <th>Capacitación</th>
-          <th>Queja</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Reporte de Ventas -->
-        <ng-container *ngIf="selectedReport === 'ventas'">
-          <tr *ngFor="let sale of filteredData">
-            <td>{{ sale.date | date }}</td>
-            <td>{{ sale.products?.[0]?.product_name || 'N/A' }}</td>
-            <td>{{ sale.products?.[0]?.client_name || sale.clientName }}</td>
-            <td>{{ sale.user_name }}</td>
-            <td>{{ sale.products?.[0]?.quantity }}</td>
-            <td>{{ sale.total_price | currency }}</td>
-          </tr>
-        </ng-container>
+            <!-- Cabeceras de Soporte al Cliente -->
+            <tr *ngIf="selectedReport === 'soporte'">
+              <th>Fecha</th>
+              <th>Producto</th>
+              <th>Cliente</th>
+              <th>Usuario</th>
+              <th>Comentarios</th>
+              <th>Capacitación</th>
+              <th>Queja</th>
+              <th>Latitud</th>
+              <th>Longitud</th>
+              <th>Adjuntos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Reporte de Ventas -->
+            <ng-container *ngIf="selectedReport === 'ventas'">
+              <tr *ngFor="let sale of filteredData">
+                <td>{{ sale.date | date }}</td>
+                <td>{{ sale.products?.length ? sale.product_name : 'Sin producto' }}</td>
+                <td>{{ sale.client_name || 'N/A' }}</td>
+                <td>{{ sale.client_category || 'N/A' }}</td>
+                <td>{{ sale.user_name }}</td>
+                <td>{{ sale.products[0]?.quantity }}</td>
+                <td>{{ sale.products[0]?.price | currency }}</td>
+                <td>{{ sale.lat }}</td>
+                <td>{{ sale.long }}</td>
+                <td>{{ sale.status || 'N/A' }}</td>
+                <td>{{ sale.total_price | currency }}</td>
+                <td class="text-center">
+                  <span *ngIf="sale.attachments?.startsWith('data:image'); else noImage">
+                    <img [src]="sale.attachments" alt="Adjunto" class="img-thumbnail" style="max-width: 120px;" />
+                  </span>
+                  <ng-template #noImage>Sin adjunto</ng-template>
+                </td>
+              </tr>
+            </ng-container>
 
-        <!-- Reporte de Vendedores -->
-        <ng-container *ngIf="selectedReport === 'vendedores'">
-          <tr *ngFor="let user of filteredData">
-            <td>{{ user.name || 'Sin nombre' }}</td>
-            <td>{{ user.email || 'Sin correo' }}</td>
-            <td>{{ user.role || 'Sin rol' }}</td>
-            <td>{{ user.assigned_region || 'Sin región' }}</td>
-            <td>{{ user.clientName || 'Sin cliente' }}</td>
-          </tr>
-        </ng-container>
+            <!-- Reporte de Vendedores -->
+            <ng-container *ngIf="selectedReport === 'vendedores'">
+              <tr *ngFor="let user of filteredData">
+                <td>{{ user.name || 'Sin nombre' }}</td>
+                <td>{{ user.email || 'Sin correo' }}</td>
+                <td>{{ user.role || 'Sin rol' }}</td>
+                <td>{{ user.assigned_region || 'Sin región' }}</td>
+                <td>{{ user.clientName || 'Sin cliente' }}</td>
+              </tr>
+            </ng-container>
 
-        <!-- Reporte de Soporte al Cliente -->
-        <ng-container *ngIf="selectedReport === 'soporte'">
-          <tr *ngFor="let support of filteredData">
-            <td>{{ support.date | date }}</td>
-            <td>{{ support.product_name || 'N/A' }}</td>
-            <td>{{ support.client_name || 'N/A' }}</td>
-            <td>{{ support.user_name || 'N/A' }}</td>
-            <td>{{ support.comments || 'Sin comentarios' }}</td>
-            <td>{{ support.training ? 'Sí' : 'No' }}</td>
-            <td>{{ support.complaint ? 'Sí' : 'No' }}</td>
-          </tr>
-        </ng-container>
-      </tbody>
-    </table>
-  </div>
+            <!-- Reporte de Soporte al Cliente -->
+            <ng-container *ngIf="selectedReport === 'soporte'">
+              <tr *ngFor="let support of filteredData">
+                <td>{{ support.date | date }}</td>
+                <td>{{ support.product_name || 'N/A' }}</td>
+                <td>{{ support.client_name || 'N/A' }}</td>
+                <td>{{ support.user_name || 'N/A' }}</td>
+                <td>{{ support.comments || 'Sin comentarios' }}</td>
+                <td>{{ support.training ? 'Sí' : 'No' }}</td>
+                <td>{{ support.complaint ? 'Sí' : 'No' }}</td>
+                <td>{{ support.lat }}</td>
+                <td>{{ support.long }}</td>
+                <td class="text-center">
+                  <span *ngIf="support.attachments?.startsWith('data:image'); else noImage">
+                    <img [src]="support.attachments" alt="Adjunto" class="img-thumbnail" style="max-width: 120px;" />
+                  </span>
+                  <ng-template #noImage>Sin adjunto</ng-template>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="filteredData.length === 0" class="alert alert-warning mt-4 text-center">
+        {{ noDataMessage }}
+      </div>
 
-  <div *ngIf="filteredData.length === 0" class="alert alert-warning mt-4">
-    {{ noDataMessage }}
-  </div>
-
-  <!-- Botones de exportación -->
-  <div class="d-flex justify-content-end gap-2">
-    <button (click)="exportToExcel()" class="btn btn-success mt-3">Exportar a Excel</button>
-    <button (click)="exportToPDF()" class="btn btn-danger mt-3">Exportar a PDF</button>
+      <!-- Botones de exportación -->
+      <div class="d-flex justify-content-center gap-2 mt-3">
+        <button (click)="exportToExcel()" class="btn btn-success">
+          <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+        </button>
+        <button (click)="exportToPDF()" class="btn btn-danger">
+          <i class="bi bi-file-earmark-pdf"></i> Exportar a PDF
+        </button>
+      </div>
+    </div>
   </div>
 </div>
