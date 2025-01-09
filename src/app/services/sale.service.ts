@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class SaleService {
-  private salesUrl = 'https://salesmicroservices2025.azurewebsites.net/api/Sales';
+  private salesUrl = 'https://salesmicroservices2024.azurewebsites.net/api/Sales';
   private productsUrl = 'https://productmicroservices.azurewebsites.net/api/Products';
   private usersUrl = 'https://authmicroservices2024.azurewebsites.net/api/Users';
   private clientsUrl = 'https://clientmicroservice2024.azurewebsites.net/api/Clients';
