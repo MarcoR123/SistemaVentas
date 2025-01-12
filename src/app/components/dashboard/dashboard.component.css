@@ -1,0 +1,17 @@
+.chart-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+table {
+  margin-top: 20px;
+}
+
+.card {
+  border-radius: 15px;
+}
+
+h2, h4 {
+  font-weight: bold;
+}

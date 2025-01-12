@@ -1,44 +1,57 @@
-<table class="table table-bordered">
-  <thead class="thead-light">
-    <tr>
-      <th>Imagen</th>
-      <th>Nombre</th>
-      <th>Cantidad</th>
-      <th>Precio</th>
-      <th>Cliente</th>
-      <th>Categoría Cliente</th>
-      <th>Vendedor</th>
-      <th>Total</th>
-      <th>Estado</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let sale of sales">
-      <!-- Imagen del producto -->
-      <td>
-        <img [src]="sale.products[0]?.product_image" alt="Imagen del producto" style="max-width: 200px; max-height: 200px;" />
-      </td>
-      <!-- Nombre del producto -->
-      <td>{{ sale.products[0]?.product_name || 'N/A' }}</td>
-      <!-- Cantidad -->
-      <td>{{ sale.products[0]?.quantity || 'N/A' }}</td>
-      <!-- Precio -->
-      <td>{{ sale.products[0]?.price | currency }}</td>
-      <!-- Cliente -->
-      <td>{{ sale.products[0]?.client_name || 'N/A' }}</td>
-      <!-- Categoría del cliente -->
-      <td>{{ sale.products[0]?.client_category || 'N/A' }}</td>
-      <!-- Vendedor -->
-      <td>{{ sale.user_name }}</td>
-      <!-- Total -->
-      <td>{{ sale.total_price | currency }}</td>
-      <!-- Estado -->
-      <td>{{ sale.status }}</td>
-      <!-- Acciones -->
-      <td>
-        <!--button class="btn btn-primary btn-sm" (click)="editSale(sale.id)">Editar</button>
-        <button class="btn btn-danger btn-sm" (click)="deleteSale(sale.id)">Eliminar</button-->
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div class="container mt-5 p-4 rounded shadow-lg bg-white">
+  <h2 class="text-center text-primary mb-4">Lista de Ventas</h2>
+
+  <!-- Mensaje de error si no se puede cargar la lista -->
+  <div *ngIf="errorMessage" class="alert alert-danger text-center">
+    {{ errorMessage }}
+  </div>
+
+  <table class="table table-hover table-bordered shadow-sm">
+    <thead class="thead-light text-center">
+      <tr>
+        <th>Imagen</th>
+        <th>Nombre</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Cliente</th>
+        <th>Categoría Cliente</th>
+        <th>Vendedor</th>
+        <th>Total</th>
+        <th>Estado</th> <!-- Dejar visible el estado -->
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let sale of sales" class="align-middle">
+        <!-- Imagen del producto -->
+        <td class="text-center">
+          <img [src]="sale.products[0]?.product_image || 'assets/placeholder.png'" alt="Producto" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+        </td>
+        <!-- Nombre del producto -->
+        <td>{{ sale.products[0]?.product_name || 'N/A' }}</td>
+        <!-- Cantidad -->
+        <td>{{ sale.products[0]?.quantity || 'N/A' }}</td>
+        <!-- Precio -->
+        <td>{{ sale.products[0]?.price | currency:'USD':true }}</td>
+        <!-- Cliente -->
+        <td>{{ sale.products[0]?.client_name || 'N/A' }}</td>
+        <!-- Categoría del cliente -->
+        <td>{{ sale.products[0]?.client_category || 'N/A' }}</td>
+        <!-- Vendedor -->
+        <td>{{ sale.user_name || 'N/A' }}</td>
+        <!-- Total -->
+        <td>{{ sale.total_price | currency:'USD':true }}</td>
+        <!-- Estado -->
+        <td class="text-center">
+          <span class="badge"
+                [ngClass]="{
+                  'bg-success': sale.status === 'Completada',
+                  'bg-warning': sale.status === 'Pendiente',
+                  'bg-danger': sale.status === 'Cancelada'
+                }">
+            {{ sale.status || 'Sin estado' }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

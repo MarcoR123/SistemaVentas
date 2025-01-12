@@ -1,15 +1,17 @@
-<div class="d-flex justify-content-between mb-3">
-  <h2>Lista de Usuarios</h2>
-  <!-- Mostrar el botón solo si el usuario es Administrador -->
-  <button class="btn btn-success" routerLink="/users/create">Crear Usuario</button>
-</div>
+<div class="container mt-5 p-4 rounded shadow-lg bg-white">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">Lista de Usuarios</h2>
+    <button class="btn btn-success btn-lg shadow-sm" routerLink="/users/create">
+      <i class="bi bi-person-plus"></i> Crear Usuario
+    </button>
+  </div>
 
-<div class="container mt-5">
-  <h2 class="text-center">Lista de Usuarios</h2>
-  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-  
-  <table class="table table-striped table-bordered mt-3">
-    <thead class="thead-dark">
+  <div *ngIf="errorMessage" class="alert alert-danger text-center">
+    {{ errorMessage }}
+  </div>
+
+  <table class="table table-hover table-bordered shadow-sm">
+    <thead class="bg-dark text-white text-center">
       <tr>
         <th>Nombre</th>
         <th>Correo Electrónico</th>
@@ -20,22 +22,32 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.name }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.role }}</td>
-        <td>{{ user.assigned_region }}</td>
-        <td>{{ user.clientName }}</td>
+      <tr *ngFor="let user of users" class="align-middle">
+        <td>{{ user.name || 'N/A' }}</td>
+        <td>{{ user.email || 'N/A' }}</td>
         <td>
-          <!-- Mostrar el botón de editar solo para Admin y Supervisor -->
-          <button  (click)="editUser(user.id)" class="btn btn-primary btn-sm">
-            Editar
-          </button>
-          
-          <!-- Mostrar el botón de eliminar solo para Admin -->
-          <button (click)="deleteUser(user.id)" class="btn btn-danger btn-sm">
-            Eliminar
-          </button>          
+          <!-- Comentario fuera de la expresión Angular -->
+          <!-- Badge verde para rol Admin -->
+          <span class="badge"
+                [ngClass]="{
+                  'bg-success text-white': user.role === 'Administrador',
+                  'bg-warning text-dark': user.role === 'Supervisor',
+                  'bg-secondary': user.role === 'Vendedor'
+                }">
+            {{ user.role || 'Sin rol' }}
+          </span>
+        </td>
+        <td>{{ user.assigned_region || 'Sin región' }}</td>
+        <td>{{ user.clientName || 'N/A' }}</td>
+        <td>
+          <div class="d-flex justify-content-center gap-2">
+            <button (click)="editUser(user.id)" class="btn btn-primary btn-sm">
+              <i class="bi bi-pencil"></i> Editar
+            </button>
+            <button (click)="deleteUser(user.id)" class="btn btn-danger btn-sm">
+              <i class="bi bi-trash"></i> Eliminar
+            </button>
+          </div>
         </td>
       </tr>
     </tbody>

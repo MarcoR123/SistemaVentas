@@ -1,29 +1,53 @@
-<div class="container mt-5">
-    <h2 class="text-center">Lista de Clientes</h2>
-    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-    
-    <div class="d-flex justify-content-end mb-3">
-      <button class="btn btn-success" (click)="createClient()">Crear Cliente</button>
-    </div>
-    
-    <table class="table table-bordered">
-      <thead class="thead-dark">
-        <tr>
-          <th>Nombre</th>
-          <th>Categoría</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let client of clients">
-          <td>{{ client.nombre }}</td>
-          <td>{{ client.categoria }}</td>
-          <td>
-            <button class="btn btn-primary btn-sm" (click)="editClient(client.id)">Editar</button>
-            <button class="btn btn-danger btn-sm" (click)="deleteClient(client.id)">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<div class="container mt-5 p-4 rounded shadow-lg bg-white">
+  <h2 class="text-center text-primary mb-4">Lista de Clientes</h2>
+
+  <!-- Mensaje de error si hay algún problema -->
+  <div *ngIf="errorMessage" class="alert alert-danger text-center">
+    {{ errorMessage }}
   </div>
-  
+
+  <!-- Botón de "Crear Cliente" -->
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success btn-lg shadow-sm" (click)="createClient()">
+      <i class="bi bi-person-plus"></i> Crear Cliente
+    </button>
+  </div>
+
+  <!-- Tabla de clientes -->
+  <table class="table table-hover table-bordered shadow-sm">
+    <thead class="bg-dark text-white text-center">
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let client of clients" class="align-middle">
+        <td>{{ client.nombre || 'N/A' }}</td>
+        <td>
+          <span class="badge"
+                [ngClass]="{
+                  'bg-info text-white': client.categoria === 'Internet',
+                  'bg-success text-white': client.categoria === 'Electrodomesticos',
+                  'bg-primary text-white': client.categoria === 'Laptops',
+                  'bg-danger text-white': client.categoria === 'Farmacia',
+                  'bg-dark text-white': client.categoria === 'Administrador'
+                }">
+            {{ client.categoria || 'Sin categoría' }}
+          </span>
+        </td>
+        <td class="text-center">
+          <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-primary btn-sm" (click)="editClient(client.id)">
+              <i class="bi bi-pencil"></i> Editar
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="deleteClient(client.id)">
+              <i class="bi bi-trash"></i> Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

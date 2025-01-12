@@ -1,127 +1,224 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { SaleService } from '../../services/sale.service';
+import { ProductService } from '../../services/product.service';
+import { ClientService } from '../../services/client.service';
+import { UserService } from '../../services/user.service';
+import { CustomerSupportService } from '../../services/customer-support.service';
+import { Chart, BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend } from 'chart.js';
+
+Chart.register(BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend);
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit {
-  salesData: any[] = [];
-  filteredData: any[] = [];
-  regions: string[] = ['Guayaquil', 'Quito', 'Cuenca', 'Manabí'];
-  selectedRegion: string = 'Todos';
-  startDate: Date | null = null;
-  endDate: Date | null = null;
+export class DashboardComponent implements OnInit, AfterViewInit {
+  @ViewChild('salesChart') salesChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('supportChart') supportChart!: ElementRef<HTMLCanvasElement>;
 
-  topSeller: any = null;
-  topBrand: any = null;
-  topProduct: any = null;
+  sales: any[] = [];
+  products: any[] = [];
+  clients: any[] = [];
+  users: any[] = [];
+  customerSupportReports: any[] = [];
+  filteredSales: any[] = [];
 
-  salesByRegionData: any;
-  salesBySellerData: any;
+  totalSales: number = 0;
+  totalProducts: number = 0;
+  totalUsers: number = 0;
+  totalClients: number = 0;
+  totalComplaints: number = 0;
+  totalTrainings: number = 0;
 
-  chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true, position: 'bottom' },
-    },
-  };
+  bestSeller: string = 'N/A';
+  mostSoldProduct: string = 'N/A';
+  mostComplainedProduct: string = 'N/A';
 
-  constructor(private saleService: SaleService) {}
+  selectedClientId: string = '';
+  selectedUserId: string = '';
+
+  private salesChartInstance: any; // Referencia al gráfico de ventas
+  private supportChartInstance: any; // Referencia al gráfico de soporte
+
+  constructor(
+    private saleService: SaleService,
+    private productService: ProductService,
+    private clientService: ClientService,
+    private userService: UserService,
+    private customerSupportService: CustomerSupportService
+  ) {}
 
   ngOnInit(): void {
-    this.loadSalesData();
+    this.loadAllData();
   }
 
-  loadSalesData(): void {
-    this.saleService.getSales().subscribe({
-      next: (data) => {
-        this.salesData = data;
-        this.generateStatistics(data);
-      },
-      error: (error) => console.error('Error al cargar ventas:', error),
+  ngAfterViewInit(): void {
+    this.renderSalesChart();
+    this.renderSupportChart();
+  }
+
+  loadAllData(): void {
+    this.saleService.getSales().subscribe((sales) => {
+      this.sales = sales;
+      this.filteredSales = sales;
+      this.calculateSalesKPIs();
+      this.renderSalesChart();
     });
+
+    this.productService.getProducts().subscribe((products) => {
+      this.products = products;
+      this.totalProducts = products.length;
+    });
+
+    this.clientService.getClients().subscribe((clients) => {
+      this.clients = clients;
+      this.totalClients = clients.length;
+    });
+
+    this.userService.getUsers().subscribe((users) => {
+      this.users = users;
+      this.totalUsers = users.length;
+    });
+
+    this.customerSupportService.getAllCustomerSupport().subscribe((reports) => {
+      this.customerSupportReports = reports;
+      this.calculateSupportKPIs();
+      this.renderSupportChart();
+    });
+  }
+
+  calculateSalesKPIs(): void {
+    this.totalSales = this.sales.reduce((sum, sale) => sum + sale.total_price, 0);
+
+    const salesByProduct: { [productId: string]: number } = {};
+    const salesByUser: { [userId: string]: number } = {};
+
+    this.sales.forEach((sale) => {
+      const productId = sale.products[0]?.product_id;
+      const userId = sale.user_id;
+
+      salesByProduct[productId] = (salesByProduct[productId] || 0) + sale.products[0]?.quantity || 0;
+      salesByUser[userId] = (salesByUser[userId] || 0) + sale.total_price;
+    });
+
+    const bestProductId = Object.keys(salesByProduct).reduce((a, b) =>
+      salesByProduct[a] > salesByProduct[b] ? a : b
+    );
+    const bestUserId = Object.keys(salesByUser).reduce((a, b) =>
+      salesByUser[a] > salesByUser[b] ? a : b
+    );
+
+    this.mostSoldProduct = this.products.find((p) => p.id === bestProductId)?.name || 'Desconocido';
+    this.bestSeller = this.users.find((u) => u.id === bestUserId)?.name || 'Desconocido';
+  }
+
+  calculateSupportKPIs(): void {
+    const complaintsByProduct: { [productId: string]: number } = {};
+    this.totalComplaints = 0;
+    this.totalTrainings = 0;
+
+    this.customerSupportReports.forEach((report) => {
+      if (report.complaint) {
+        this.totalComplaints++;
+        const productId = report.product_id;
+        complaintsByProduct[productId] = (complaintsByProduct[productId] || 0) + 1;
+      }
+      if (report.training) {
+        this.totalTrainings++;
+      }
+    });
+
+    const mostComplainedProductId = Object.keys(complaintsByProduct).reduce((a, b) =>
+      complaintsByProduct[a] > complaintsByProduct[b] ? a : b
+    );
+
+    this.mostComplainedProduct = this.products.find((p) => p.id === mostComplainedProductId)?.name || 'Desconocido';
   }
 
   filterData(): void {
-    this.filteredData = this.salesData.filter((sale) => {
-      const saleDate = new Date(sale.date);
-      const isWithinRegion = this.selectedRegion === 'Todos' || sale.region === this.selectedRegion;
-      const isWithinDates =
-        (!this.startDate || saleDate >= new Date(this.startDate)) &&
-        (!this.endDate || saleDate <= new Date(this.endDate));
-
-      return isWithinRegion && isWithinDates;
+    this.filteredSales = this.sales.filter((sale) => {
+      const matchesClient = !this.selectedClientId || sale.products[0]?.clientId === this.selectedClientId;
+      const matchesUser = !this.selectedUserId || sale.user_id === this.selectedUserId;
+      return matchesClient && matchesUser;
     });
-    this.generateStatistics(this.filteredData);
+    this.renderSalesChart();
   }
 
-  generateStatistics(data: any[]): void {
-    this.topSeller = this.calculateTopSeller(data);
-    this.topBrand = this.calculateTopBrand(data);
-    this.topProduct = this.calculateTopProduct(data);
-    this.salesByRegionData = this.getSalesByRegionChartData(data);
-    this.salesBySellerData = this.getSalesBySellerChartData(data);
+  resetFilters(): void {
+    this.selectedClientId = '';
+    this.selectedUserId = '';
+    this.filteredSales = this.sales;
+    this.renderSalesChart();
   }
 
-  calculateTopSeller(data: any[]): any {
-    const sellerSales = new Map();
-    data.forEach((sale) => {
-      const seller = sale.user_name || 'Desconocido';
-      sellerSales.set(seller, (sellerSales.get(seller) || 0) + sale.total_price);
+  renderSalesChart(): void {
+    const canvas = this.salesChart.nativeElement;
+
+    // Destruir gráfico existente
+    if (this.salesChartInstance) {
+      this.salesChartInstance.destroy();
+    }
+
+    const salesByClient: { [key: string]: number } = {};
+
+    this.filteredSales.forEach((sale) => {
+      const clientName = sale.products[0]?.client_name || 'Desconocido';
+      salesByClient[clientName] = (salesByClient[clientName] || 0) + sale.total_price;
     });
 
-    const topSeller = Array.from(sellerSales).reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev), ['', 0]);
-    return { name: topSeller[0], totalSales: topSeller[1] };
+    const clientNames = Object.keys(salesByClient);
+    const totalAmounts = Object.values(salesByClient);
+
+    this.salesChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: clientNames,
+        datasets: [
+          {
+            label: 'Ventas por Cliente',
+            data: totalAmounts,
+            backgroundColor: '#4285F4',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
   }
 
-  calculateTopBrand(data: any[]): any {
-    const brandSales = new Map();
-    data.forEach((sale) => {
-      const brand = sale.products[0]?.brand || 'Sin Marca';
-      brandSales.set(brand, (brandSales.get(brand) || 0) + sale.total_price);
+  renderSupportChart(): void {
+    const canvas = this.supportChart.nativeElement;
+
+    // Destruir gráfico existente
+    if (this.supportChartInstance) {
+      this.supportChartInstance.destroy();
+    }
+
+    const complaintsCount = this.totalComplaints;
+    const trainingCount = this.totalTrainings;
+
+    this.supportChartInstance = new Chart(canvas, {
+      type: 'pie',
+      data: {
+        labels: ['Quejas', 'Entrenamientos'],
+        datasets: [
+          {
+            data: [complaintsCount, trainingCount],
+            backgroundColor: ['#FF6347', '#4CAF50'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+        },
+      },
     });
-
-    const topBrand = Array.from(brandSales).reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev), ['', 0]);
-    return { brand: topBrand[0], sales: topBrand[1] };
-  }
-
-  calculateTopProduct(data: any[]): any {
-    const productSales = new Map();
-    data.forEach((sale) => {
-      const productName = sale.products[0]?.product_name || 'Producto Desconocido';
-      productSales.set(productName, (productSales.get(productName) || 0) + sale.products[0]?.quantity);
-    });
-
-    const topProduct = Array.from(productSales).reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev), ['', 0]);
-    return { name: topProduct[0], sales: topProduct[1] };
-  }
-
-  getSalesByRegionChartData(data: any[]): any {
-    const regionSales = new Map();
-    data.forEach((sale) => {
-      const region = sale.region || 'Sin Región';
-      regionSales.set(region, (regionSales.get(region) || 0) + sale.total_price);
-    });
-
-    const labels = Array.from(regionSales.keys());
-    const salesData = Array.from(regionSales.values());
-
-    return { labels, datasets: [{ label: 'Ventas por Región', data: salesData, backgroundColor: '#0070C0' }] };
-  }
-
-  getSalesBySellerChartData(data: any[]): any {
-    const sellerSales = new Map();
-    data.forEach((sale) => {
-      const seller = sale.user_name || 'Desconocido';
-      sellerSales.set(seller, (sellerSales.get(seller) || 0) + sale.total_price);
-    });
-
-    const labels = Array.from(sellerSales.keys());
-    const salesData = Array.from(sellerSales.values());
-
-    return { labels, datasets: [{ label: 'Ventas por Vendedor', data: salesData, backgroundColor: '#28a745' }] };
   }
 }

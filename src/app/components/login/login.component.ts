@@ -9,6 +9,8 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   email: string = '';
   password: string = '';
+  passwordVisible: boolean = false;
+
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -17,6 +19,8 @@ export class LoginComponent {
       alert('Por favor, ingresa un correo electrónico y una contraseña válidos.');
       return;
     }
+
+    
 
     const formData = new FormData();
     formData.append('email', this.email);
@@ -39,5 +43,11 @@ export class LoginComponent {
         );
       },
     });
+  }
+
+  togglePasswordVisibility() {
+    const passwordField = document.getElementById('password') as HTMLInputElement;
+    this.passwordVisible = !this.passwordVisible;
+    passwordField.type = this.passwordVisible ? 'text' : 'password';
   }
 }

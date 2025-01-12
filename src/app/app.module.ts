@@ -24,10 +24,20 @@ import { ClientFormComponent } from './components/client-form/client-form.compon
 import { ClientEditComponent } from './components/client-edit/client-edit.component';
 import { ReportsComponent } from './components/reports/reports.component';  // Importar componente de informes
 import { CustomerSupportService } from './services/customer-support.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-
-
-
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
 
 
 @NgModule({
@@ -56,9 +66,20 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
     AppRoutingModule,
     FormsModule,
     HttpClientModule, 
-    CommonModule
-
-  ],
+    CommonModule,
+    BrowserAnimationsModule,  // Necesario para las animaciones de Angular Material
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatTableModule,
+    MatSortModule,
+    MatToolbarModule,
+    MatPaginatorModule,
+    MatDatepickerModule,
+    MatNativeDateModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

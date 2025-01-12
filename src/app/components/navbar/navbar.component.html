@@ -1,25 +1,50 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="#">Sistema de Ventas</a>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item" *ngIf="isAuthenticated()">
-            <a class="nav-link" routerLink="/products">Productos</a>
-          </li>
-          <li class="nav-item" *ngIf="isAuthenticated()">
-            <a class="nav-link" routerLink="/sales">Ventas</a>
-          </li>
-          <li class="nav-item" *ngIf="isAdmin()">
-            <a class="nav-link" routerLink="/users">Usuarios</a>
-          </li>
-          <li class="nav-item" *ngIf="isAdmin()">
-            <a class="nav-link" routerLink="/clients">Clientes</a>
-          </li>
-          <li class="nav-item" *ngIf="isAuthenticated()">
-            <a class="nav-link" routerLink="/reports">Informes</a>
-        </ul>
-        <button *ngIf="isAuthenticated()" class="btn btn-danger" (click)="logout()">Cerrar sesión</button>
-      </div>
+<div class="d-flex vh-100">
+  <!-- Barra lateral -->
+  <nav class="sidebar bg-light shadow-sm">
+    <div class="text-center py-4">
+      <h5 class="fw-bold">Sistema de Ventas</h5>
     </div>
+    <ul class="nav flex-column p-3">
+      <li class="nav-item" *ngIf="isAuthenticated()">
+        <a class="nav-link active" routerLink="/products">
+          <i class="bi bi-box-seam"></i> Productos
+        </a>
+      </li>
+      <li class="nav-item" *ngIf="isAuthenticated()">
+        <a class="nav-link" routerLink="/sales">
+          <i class="bi bi-cart"></i> Ventas
+        </a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin()">
+        <a class="nav-link" routerLink="/users">
+          <i class="bi bi-people"></i> Usuarios
+        </a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin()">
+        <a class="nav-link" routerLink="/clients">
+          <i class="bi bi-person-badge"></i> Clientes
+        </a>
+      </li>
+      <li class="nav-item" *ngIf="isAuthenticated()">
+        <a class="nav-link" routerLink="/reports">
+          <i class="bi bi-bar-chart"></i> Informes
+        </a>
+      </li>
+      <li class="nav-item" *ngIf="isAuthenticated()">
+        <a class="nav-link" routerLink="/dashboard">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item mt-4">
+        <button *ngIf="isAuthenticated()" class="btn btn-danger w-100" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+        </button>
+      </li>
+    </ul>
   </nav>
-  
+
+  <!-- Contenido principal -->
+  <div class="content flex-grow-1 p-4">
+    <router-outlet></router-outlet>
+  </div>
+</div>

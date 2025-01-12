@@ -1,0 +1,14 @@
+.bg-success {
+    background-color: #00ea61 !important;  /* Verde brillante */
+    color: white;
+  }
+  
+  .bg-warning {
+    background-color: #ffc107 !important;  /* Amarillo */
+  }
+  
+  .bg-secondary {
+    background-color: #6c757d !important;  /* Gris */
+    color: white;
+  }
+  

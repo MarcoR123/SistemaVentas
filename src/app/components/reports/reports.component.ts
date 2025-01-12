@@ -236,16 +236,33 @@ async mapSupportData(data: any[]): Promise<any[]> {
     const selectedData = this.getSelectedData();
   
     this.filteredData = selectedData.filter((item) => {
-      const matchesSeller =
-        this.selectedVendedor === 'Todos' || item.user_name === this.selectedVendedor || item.name === this.selectedVendedor;
+      const itemDate = new Date(item.date);
+      const startDateValid = !this.startDate || itemDate >= new Date(this.startDate);
+      
+      // Sumamos un día al `endDate` para incluir toda la fecha seleccionada
+      const adjustedEndDate = this.endDate ? new Date(this.endDate) : null;
+      if (adjustedEndDate) {
+        adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+      }
   
-      const matchesClient =
-        this.selectedClientName === 'Todos' || item.client_name === this.selectedClientName || item.clientName === this.selectedClientName;
+      const endDateValid = !this.endDate || (adjustedEndDate && itemDate < adjustedEndDate);
   
-      return matchesSeller && matchesClient;
+      return startDateValid && endDateValid;
     });
   
     this.noDataMessage = this.filteredData.length === 0 ? 'No se encontraron datos para los filtros seleccionados.' : '';
+  }
+  
+  
+  
+  
+  resetFilters(): void {
+    this.startDate = null;
+  this.endDate = null;
+    this.selectedVendedor = 'Todos'; // Limpia el filtro de vendedor
+    this.selectedClientName = 'Todos'; // Limpia el filtro de cliente
+    this.filteredData = this.getSelectedData(); // Recupera todos los datos sin filtros
+    this.noDataMessage = '';
   }
   
 

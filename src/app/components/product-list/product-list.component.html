@@ -1,37 +1,52 @@
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Lista de Productos</h2>
+<div class="container mt-5 p-4 rounded shadow-lg bg-white">
+  <h2 class="text-center mb-4 text-primary">Lista de Productos</h2>
 
-<table class="table table-hover table-bordered mt-3 custom-table">
-  <thead class="thead-light">
-    <tr>
-      <th>Imagen</th>
-      <th>Nombre</th>
-      <th>Descripción</th>
-      <th>Precio</th>
-      <th>Marca</th> <!-- Nuevo -->
-      <th>Categoría</th> <!-- Nuevo -->
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let product of products">
-      <td class="text-center">
-        <img *ngIf="product.image" [src]="product.image" alt="{{product.name}}" class="img-fluid rounded" style="width: 180px; height: 180px; object-fit: cover;">
-        <span *ngIf="!product.image" class="text-muted">Sin imagen</span>
-      </td>
-      <td>{{ product.name }}</td>
-      <td>{{ product.description }}</td>
-      <td>{{ product.price | currency }}</td>
-      <td>{{ product.clientName }}</td> <!-- Nuevo -->
-      <td>{{ product.clientCategory }}</td> <!-- Nuevo -->
-      <td class="text-center">
-        <button *ngIf="product.id" (click)="editProduct(product.id)" class="btn btn-primary btn-sm">Editar</button>
-        <button *ngIf="product.id" (click)="deleteProduct(product.id)" class="btn btn-danger btn-sm">Eliminar</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+  <div *ngIf="errorMessage" class="alert alert-danger text-center">
+    {{ errorMessage }}
+  </div>
 
+  <table class="table table-hover table-bordered mt-3 custom-table shadow-sm">
+    <thead class="thead-light bg-light text-center">
+      <tr>
+        <th>Imagen</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Marca</th> <!-- Nuevo -->
+        <th>Categoría</th> <!-- Nuevo -->
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products" class="align-middle">
+        <td class="text-center">
+          <img *ngIf="product.image" [src]="product.image" alt="{{ product.name }}" 
+               class="img-thumbnail rounded shadow-sm" 
+               style="width: 150px; height: 150px; object-fit: cover;">
+          <span *ngIf="!product.image" class="text-muted">Sin imagen</span>
+        </td>
+        <td class="fw-bold">{{ product.name }}</td>
+        <td>{{ product.description }}</td>
+        <td>{{ product.price | currency:'USD':true }}</td>
+        <td>{{ product.clientName }}</td> <!-- Nuevo -->
+        <td>{{ product.clientCategory }}</td> <!-- Nuevo -->
+        <td class="text-center">
+          <div class="d-flex justify-content-center gap-2">
+            <button *ngIf="product.id" (click)="editProduct(product.id)" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-pencil"></i> Editar
+            </button>
+            <button *ngIf="product.id" (click)="deleteProduct(product.id)" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i> Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-<button routerLink="/products/new" class="btn btn-success mt-3">Crear Producto</button>
+  <div class="text-center mt-4">
+    <button routerLink="/products/new" class="btn btn-success btn-lg shadow-sm">
+      <i class="bi bi-plus-lg"></i> Crear Producto
+    </button>
+  </div>
 </div>

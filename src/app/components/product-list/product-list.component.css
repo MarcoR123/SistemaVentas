@@ -1,0 +1,57 @@
+.container {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+  }
+  
+  .custom-table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  thead th {
+    background-color: #343a40;
+    color: white;
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+  
+  tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .table img {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .alert-danger {
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  
+  .btn-success {
+    background-color: #28a745;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 5px;
+  }
+  
+  .btn-success:hover {
+    background-color: #218838;
+  }
+  
+  .shadow-lg {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  }
+  
