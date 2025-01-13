@@ -14,6 +14,12 @@ export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
+  togglePasswordVisibility() {
+    const passwordField = document.getElementById('password') as HTMLInputElement;
+    this.passwordVisible = !this.passwordVisible;
+    passwordField.type = this.passwordVisible ? 'text' : 'password';
+  }
+
   onLogin(): void {
     if (!this.email || !this.password) {
       alert('Por favor, ingresa un correo electrónico y una contraseña válidos.');
@@ -45,9 +51,4 @@ export class LoginComponent {
     });
   }
 
-  togglePasswordVisibility() {
-    const passwordField = document.getElementById('password') as HTMLInputElement;
-    this.passwordVisible = !this.passwordVisible;
-    passwordField.type = this.passwordVisible ? 'text' : 'password';
-  }
 }
