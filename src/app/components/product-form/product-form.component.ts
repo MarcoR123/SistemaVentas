@@ -6,8 +6,9 @@ import { Product } from '../../models/product.model';
 import { Client } from '../../models/client.model'; // Modelo para clientes
 
 @Component({
-  selector: 'app-product-form',
-  templateUrl: './product-form.component.html',
+    selector: 'app-product-form',
+    templateUrl: './product-form.component.html',
+    standalone: false
 })
 export class ProductFormComponent implements OnInit {
   product: Product = {

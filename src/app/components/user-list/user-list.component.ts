@@ -6,8 +6,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-user-list',
-  templateUrl: './user-list.component.html',
+    selector: 'app-user-list',
+    templateUrl: './user-list.component.html',
+    standalone: false
 })
 export class UserListComponent implements OnInit {
   users: any[] = [];  // Lista de usuarios

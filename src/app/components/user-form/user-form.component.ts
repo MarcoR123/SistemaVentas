@@ -6,8 +6,9 @@ import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
 
 @Component({
-  selector: 'app-user-form',
-  templateUrl: './user-form.component.html',
+    selector: 'app-user-form',
+    templateUrl: './user-form.component.html',
+    standalone: false
 })
 export class UserFormComponent implements OnInit {
   user: User = {

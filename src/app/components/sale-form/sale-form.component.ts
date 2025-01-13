@@ -4,8 +4,9 @@ import { SaleService } from '../../services/sale.service';
 import { ProductService } from '../../services/product.service';
 
 @Component({
-  selector: 'app-sale-form',
-  templateUrl: './sale-form.component.html',
+    selector: 'app-sale-form',
+    templateUrl: './sale-form.component.html',
+    standalone: false
 })
 
 export class SaleFormComponent implements OnInit {

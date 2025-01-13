@@ -4,8 +4,9 @@ import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
 
 @Component({
-  selector: 'app-client-edit',
-  templateUrl: './client-edit.component.html',
+    selector: 'app-client-edit',
+    templateUrl: './client-edit.component.html',
+    standalone: false
 })
 export class ClientEditComponent implements OnInit {
   client: Client = {

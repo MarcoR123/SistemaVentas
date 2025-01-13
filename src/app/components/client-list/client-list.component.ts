@@ -4,8 +4,9 @@ import { Router } from '@angular/router';
 import { Client } from '../../models/client.model';
 
 @Component({
-  selector: 'app-client-list',
-  templateUrl: './client-list.component.html',
+    selector: 'app-client-list',
+    templateUrl: './client-list.component.html',
+    standalone: false
 })
 export class ClientListComponent implements OnInit {
   clients: Client[] = [];

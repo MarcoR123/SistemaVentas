@@ -3,8 +3,9 @@ import { Router } from '@angular/router';
 import { SaleService } from '../../services/sale.service';
 
 @Component({
-  selector: 'app-sale-list',
-  templateUrl: './sale-list.component.html',
+    selector: 'app-sale-list',
+    templateUrl: './sale-list.component.html',
+    standalone: false
 })
 export class SaleListComponent implements OnInit {
   sales: any[] = [];

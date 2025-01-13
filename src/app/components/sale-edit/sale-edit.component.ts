@@ -3,8 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SaleService } from '../../services/sale.service';
 
 @Component({
-  selector: 'app-sale-edit',
-  templateUrl: './sale-edit.component.html',
+    selector: 'app-sale-edit',
+    templateUrl: './sale-edit.component.html',
+    standalone: false
 })
 export class SaleEditComponent implements OnInit {
   sale: any = { products: [{ product_id: '', quantity: 0 }], status: '' };

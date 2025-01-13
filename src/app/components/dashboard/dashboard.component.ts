@@ -9,9 +9,10 @@ import { Chart, BarController, BarElement, CategoryScale, LinearScale, PieContro
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend);
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css'],
+    standalone: false
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('salesChart') salesChart!: ElementRef<HTMLCanvasElement>;

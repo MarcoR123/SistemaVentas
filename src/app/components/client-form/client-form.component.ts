@@ -3,8 +3,9 @@ import { Router } from '@angular/router';
 import { ClientService } from '../../services/client.service';
 
 @Component({
-  selector: 'app-client-form',
-  templateUrl: './client-form.component.html',
+    selector: 'app-client-form',
+    templateUrl: './client-form.component.html',
+    standalone: false
 })
 export class ClientFormComponent {
   client = {

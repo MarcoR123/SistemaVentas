@@ -6,8 +6,9 @@ import { User } from '../../models/user.model';
 import { Client } from '../../models/client.model';
 
 @Component({
-  selector: 'app-user-edit',
-  templateUrl: './user-edit.component.html',
+    selector: 'app-user-edit',
+    templateUrl: './user-edit.component.html',
+    standalone: false
 })
 export class UserEditComponent implements OnInit {
   user: User = {

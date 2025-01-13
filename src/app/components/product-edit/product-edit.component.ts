@@ -7,8 +7,9 @@ import { Client } from '../../models/client.model';
 
 
 @Component({
-  selector: 'app-product-edit',
-  templateUrl: './product-edit.component.html',
+    selector: 'app-product-edit',
+    templateUrl: './product-edit.component.html',
+    standalone: false
 })
 export class ProductEditComponent implements OnInit {
   product: Product = {
