@@ -4,6 +4,11 @@ import { ClientService } from '../../services/client.service'; // Nuevo servicio
 import { Router } from '@angular/router';
 import { Product } from '../../models/product.model';
 import { Client } from '../../models/client.model'; // Modelo para clientes
+import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
+import { environment } from '../../../environments/environment';
+import { v4 as uuidv4 } from 'uuid';  // Para generar nombres únicos
+import { getApps, initializeApp } from '@angular/fire/app';
+
 
 @Component({
     selector: 'app-product-form',
@@ -29,6 +34,9 @@ export class ProductFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (!getApps().length) {
+      initializeApp(environment.firebaseConfig);
+    }
     // Cargar la lista de clientes al inicializar el componente
     this.clientService.getClients().subscribe({
       next: (clients) => {
@@ -41,13 +49,22 @@ export class ProductFormComponent implements OnInit {
   onImageSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        this.product.image = reader.result as string;
-      };
-      reader.readAsDataURL(file);
+      const storage = getStorage(); // Esto toma la instancia predeterminada ya inicializada
+      const storageRef = ref(storage, `products/${uuidv4()}.${file.name.split('.').pop()}`);  // Nombre único con extensión
+  
+      uploadBytes(storageRef, file).then((snapshot) => {
+        console.log('Imagen subida con éxito');
+        // Obtener la URL de descarga
+        getDownloadURL(snapshot.ref).then((url) => {
+          this.product.image = url;  // Guardamos la URL en el producto
+          console.log('URL de la imagen:', url);
+        });
+      }).catch((error) => {
+        console.error('Error al subir la imagen:', error);
+      });
     }
   }
+  
 
   createProduct(): void {
     const formData = new FormData();

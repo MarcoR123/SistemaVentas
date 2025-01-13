@@ -38,6 +38,10 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
+import { AngularFireModule } from '@angular/fire/compat';
+import { environment } from '../environments/environment';
+import { AngularFireStorageModule } from '@angular/fire/compat/storage';
+
 
 
 @NgModule({
@@ -78,7 +82,9 @@ import { MatIconModule } from '@angular/material/icon';
     MatToolbarModule,
     MatPaginatorModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireStorageModule
     ],
   providers: [],
   bootstrap: [AppComponent]
