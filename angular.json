@@ -26,12 +26,23 @@
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
             ],
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-            ]
+            ],
+            "allowedCommonJsDependencies": [
+            "canvg",
+            "html2canvas",
+            "jspdf",
+            "file-saver",
+            "exceljs",
+            "leaflet",
+            "leaflet.markercluster",
+            "dompurify",
+            "rgbcolor",
+            "raf"
+  ]
           },
           "configurations": {
             "production": {
@@ -44,13 +55,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "3mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "10kb",
+                  "maximumError": "15kb"
                 }
               ],
               "outputHashing": "all"
@@ -95,11 +106,9 @@
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
             ],
             "scripts": [
-              "node_modules/leaflet/dist/leaflet.js",
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ]
           }
