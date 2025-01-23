@@ -1,7 +1,7 @@
 <div class="container py-4">
   <h2 class="text-center mb-4">Dashboard de Ventas y Soporte al Cliente</h2>
 
-  <!-- Tarjetas de KPIs agrupadas en filas -->
+  <!-- Tarjetas de KPIs en una sola fila -->
   <div class="row row-cols-1 row-cols-md-4 g-4">
     <div class="col">
       <div class="card bg-primary text-white shadow">
@@ -11,34 +11,6 @@
         </div>
       </div>
     </div>
-    <div class="col">
-      <div class="card bg-success text-white shadow">
-        <div class="card-body">
-          <h5>Total Productos</h5>
-          <h3>{{ totalProducts }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card bg-warning text-white shadow">
-        <div class="card-body">
-          <h5>Total Usuarios</h5>
-          <h3>{{ totalUsers }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card bg-danger text-white shadow">
-        <div class="card-body">
-          <h5>Total Clientes</h5>
-          <h3>{{ totalClients }}</h3>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Segunda fila de KPIs -->
-  <div class="row row-cols-1 row-cols-md-4 g-4 mt-4">
     <div class="col">
       <div class="card bg-success text-white shadow">
         <div class="card-body">
@@ -55,14 +27,7 @@
         </div>
       </div>
     </div>
-    <div class="col">
-      <div class="card bg-info text-white shadow">
-        <div class="card-body">
-          <h5>Producto con Más Quejas</h5>
-          <h3>{{ mostComplainedProduct }}</h3>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <!-- Filtros -->
@@ -87,6 +52,9 @@
     <button class="btn btn-primary me-2" (click)="filterData()">Aplicar Filtros</button>
     <button class="btn btn-secondary" (click)="resetFilters()">Limpiar Filtros</button>
   </div>
+
+  
+
 
   <!-- Gráficos -->
   <div class="row">

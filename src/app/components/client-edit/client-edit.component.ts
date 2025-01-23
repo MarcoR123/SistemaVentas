@@ -4,9 +4,10 @@ import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
 
 @Component({
-    selector: 'app-client-edit',
-    templateUrl: './client-edit.component.html',
-    standalone: false
+  selector: 'app-client-edit',
+  templateUrl: './client-edit.component.html',
+  standalone: false,
+  styleUrls: ['./client-edit.component.css'],
 })
 export class ClientEditComponent implements OnInit {
   client: Client = {
@@ -14,6 +15,10 @@ export class ClientEditComponent implements OnInit {
     nombre: '',
     categoria: '',
   };
+
+  message: string = ''; // Mensaje del modal
+  isModalVisible: boolean = false; // Controla la visibilidad del modal
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
 
   constructor(
     private clientService: ClientService,
@@ -37,17 +42,31 @@ export class ClientEditComponent implements OnInit {
 
     this.clientService.updateClient(this.client.id, formData).subscribe({
       next: () => {
-        alert('Cliente actualizado exitosamente.');
-        this.router.navigate(['/clients']);
+        this.showModal('Cliente actualizado exitosamente.', 'success');
+        setTimeout(() => this.router.navigate(['/clients']), 1000); // Redirigir
       },
-      error: (err) => {
-        console.error('Error al actualizar el cliente:', err);
-        alert('Error al actualizar el cliente.');
+      error: () => {
+        this.showModal(
+          'Error al actualizar el cliente. Por favor, intente nuevamente.',
+          'error'
+        );
       },
     });
   }
 
   cancel(): void {
     this.router.navigate(['/clients']);
+  }
+
+  // Muestra el modal con el mensaje y el tipo
+  showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 2000);
   }
 }

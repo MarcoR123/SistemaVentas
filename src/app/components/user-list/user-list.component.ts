@@ -8,11 +8,19 @@ import { AuthService } from '../../services/auth.service';
 @Component({
     selector: 'app-user-list',
     templateUrl: './user-list.component.html',
-    standalone: false
+    standalone: false,
+    styleUrls: ['./user-list.component.css']
 })
 export class UserListComponent implements OnInit {
   users: any[] = [];  // Lista de usuarios
   errorMessage: string | null = null;
+
+  isModalVisible: boolean = false; // Controla la visibilidad del modal de mensaje
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal
+  message: string = ''; // Mensaje del modal
+
+  isConfirmVisible: boolean = false; // Controla la visibilidad del modal de confirmación
+  userToDelete: string | null = null; // ID del usuario a eliminar
 
   constructor(private userService: UserService, private authService: AuthService , private router: Router) {}
 
@@ -50,20 +58,43 @@ export class UserListComponent implements OnInit {
     this.router.navigate([`/users/edit/${id}`]);
   }
 
-  deleteUser(id: string): void {
-    if (confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-      this.userService.deleteUser(id).subscribe({
+  showConfirm(userId: string): void {
+    this.userToDelete = userId;
+    this.isConfirmVisible = true;
+  }
+
+  confirmDelete(): void {
+    if (this.userToDelete) {
+      this.userService.deleteUser(this.userToDelete).subscribe({
         next: () => {
-          // Remover el usuario de la lista sin necesidad de recargar
-          this.users = this.users.filter(user => user.id !== id);
-          alert("Usuario eliminado exitosamente");
+          this.users = this.users.filter((user) => user.id !== this.userToDelete);
+          this.showModal('Usuario eliminado exitosamente.', 'success');
+          this.loadUsers();
         },
-        error: (error) => {
-          alert(error.message);
-          console.warn("Error al eliminar el usuario:", error);
-          alert("Error al eliminar el usuario");
-        }
+        error: (err) => {
+          console.error('Error al eliminar el usuario:', err);
+          this.showModal('Error al eliminar el usuario. Intente nuevamente.', 'error');
+        },
       });
+      this.isConfirmVisible = false;
+      this.userToDelete = null;
     }
+  }
+
+  cancelDelete(): void {
+    this.isConfirmVisible = false;
+    this.userToDelete = null;
+  }
+
+  // Mostrar modal de mensaje
+  showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 3000);
   }
 }

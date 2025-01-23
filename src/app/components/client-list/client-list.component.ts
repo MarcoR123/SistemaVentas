@@ -6,11 +6,18 @@ import { Client } from '../../models/client.model';
 @Component({
     selector: 'app-client-list',
     templateUrl: './client-list.component.html',
-    standalone: false
+    standalone: false,
+    styleUrls: ['./client-list.component.css']
 })
 export class ClientListComponent implements OnInit {
   clients: Client[] = [];
   errorMessage: string | null = null;
+
+  message: string = ''; // Mensaje del modal
+  isModalVisible: boolean = false; // Controla la visibilidad del modal
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
+  isConfirmVisible: boolean = false; // Controla la visibilidad del modal de confirmación
+  clientToDelete: string | null = null; // ID del cliente a eliminar
 
   constructor(private clientService: ClientService, private router: Router) {}
 
@@ -38,18 +45,48 @@ export class ClientListComponent implements OnInit {
     this.router.navigate([`/clients/edit/${id}`]);
   }
 
-  deleteClient(id: string): void {
-    if (confirm('¿Está seguro de que desea eliminar este cliente?')) {
-      this.clientService.deleteClient(id).subscribe({
+  showConfirm(clientId: string): void {
+    this.clientToDelete = clientId;
+    this.isConfirmVisible = true;
+  }
+
+  confirmDelete(): void {
+    if (this.clientToDelete) {
+      this.clientService.deleteClient(this.clientToDelete).subscribe({
         next: () => {
-          this.clients = this.clients.filter((client) => client.id !== id);
-          alert('Cliente eliminado exitosamente.');
+          this.clients = this.clients.filter(
+            (client) => client.id !== this.clientToDelete
+          );
+          this.showModal('Cliente eliminado exitosamente.', 'success');
+          this.loadClients(); 
         },
         error: (err) => {
           console.error('Error al eliminar el cliente:', err);
-          alert('Error al eliminar el cliente.');
+          this.showModal(
+            'Error al eliminar el cliente. Por favor, intente nuevamente.',
+            'error'
+          );
         },
       });
+      this.isConfirmVisible = false;
+      this.clientToDelete = null;
     }
+  }
+
+  cancelDelete(): void {
+    this.isConfirmVisible = false;
+    this.clientToDelete = null;
+  }
+
+  // Muestra el modal con el mensaje y el tipo
+  showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 3000);
   }
 }

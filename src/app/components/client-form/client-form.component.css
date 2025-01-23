@@ -1,0 +1,9 @@
+.modal.show {
+    display: block;
+    opacity: 1;
+  }
+  
+  .modal.fade {
+    transition: opacity 0.3s ease-in-out;
+  }
+  

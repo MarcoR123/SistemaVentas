@@ -20,23 +20,23 @@
       <div class="row g-3">
         <div class="col-md-3">
           <label for="startDate" class="form-label fw-bold">Fecha Inicio:</label>
-          <input type="date" [(ngModel)]="startDate" class="form-control" />
+          <input type="date" [(ngModel)]="startDate" class="form-control" (change)="filterData()" />
         </div>
         <div class="col-md-3">
           <label for="endDate" class="form-label fw-bold">Fecha Fin:</label>
-          <input type="date" [(ngModel)]="endDate" class="form-control" />
+          <input type="date" [(ngModel)]="endDate" class="form-control" (change)="filterData()" />
         </div>
         <div class="col-md-3">
           <label for="vendedor">Seleccionar Vendedor:</label>
-          <select [(ngModel)]="selectedVendedor" class="form-select">
-            <option *ngFor="let vendedor of vendedores">{{ vendedor }}</option>
+          <select [(ngModel)]="selectedVendedor" class="form-select" (change)="filterData()">
+            <option *ngFor="let vendedor of vendedores" [value]="vendedor">{{ vendedor }}</option>
           </select>
         </div>
         <div class="col-md-3">
           <label for="client">Seleccionar Cliente:</label>
-  <select [(ngModel)]="selectedClientName" class="form-select">
-    <option *ngFor="let client of clientes">{{ client }}</option>
-  </select>
+          <select [(ngModel)]="selectedClientName" class="form-select" (change)="filterData()">
+            <option *ngFor="let client of clientes" [value]="client">{{ client }}</option>
+          </select>
         </div>
       </div>
 
@@ -112,7 +112,7 @@
                 <td>{{ sale.status || 'N/A' }}</td>
                 <td>{{ sale.total_price | currency }}</td>
                 <td class="text-center">
-                  <span *ngIf="sale.attachments?.startsWith('data:image'); else noImage">
+                  <span *ngIf="sale.attachments && sale.attachments !== 'null'; else noImage">
                     <img [src]="sale.attachments" alt="Adjunto" class="img-thumbnail" style="max-width: 120px;" />
                   </span>
                   <ng-template #noImage>Sin adjunto</ng-template>
@@ -144,7 +144,7 @@
                 <td>{{ support.lat }}</td>
                 <td>{{ support.long }}</td>
                 <td class="text-center">
-                  <span *ngIf="support.attachments?.startsWith('data:image'); else noImage">
+                  <span *ngIf="support.attachments && support.attachments !== 'null'; else noImage">
                     <img [src]="support.attachments" alt="Adjunto" class="img-thumbnail" style="max-width: 120px;" />
                   </span>
                   <ng-template #noImage>Sin adjunto</ng-template>

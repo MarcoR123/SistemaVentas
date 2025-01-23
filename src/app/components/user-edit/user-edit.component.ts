@@ -8,7 +8,8 @@ import { Client } from '../../models/client.model';
 @Component({
     selector: 'app-user-edit',
     templateUrl: './user-edit.component.html',
-    standalone: false
+    standalone: false,
+    styleUrls: ['./user-edit.component.css']
 })
 export class UserEditComponent implements OnInit {
   user: User = {
@@ -22,6 +23,10 @@ export class UserEditComponent implements OnInit {
   };
   userId: string | null = '';
   clients: Client[] = []; // Lista de clientes para el desplegable
+
+  message: string = '';
+  isModalVisible: boolean = false;
+  modalType: 'success' | 'error' = 'success';
 
   constructor(
     private userService: UserService,
@@ -68,17 +73,29 @@ export class UserEditComponent implements OnInit {
   updateUser(): void {
     this.userService.updateUser(this.userId!, this.user).subscribe({
       next: () => {
-        alert('Usuario actualizado con éxito');
-        this.router.navigate(['/users']);
+        this.showModal('Usuario actualizado con éxito.', 'success');
+        setTimeout(() => this.router.navigate(['/users']), 2000);
       },
       error: (err) => {
         console.error('Error al actualizar el usuario', err);
-        alert('Error al actualizar el usuario');
+        this.showModal('Error al actualizar el usuario. Por favor, intente nuevamente.', 'error');
       },
     });
   }
 
   cancel(): void {
     this.router.navigate(['/users']);
+  }
+
+  // Método para mostrar el modal
+  showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 2000);
   }
 }

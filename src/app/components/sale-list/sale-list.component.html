@@ -7,7 +7,7 @@
   </div>
 
   <table class="table table-hover table-bordered shadow-sm">
-    <thead class="thead-light text-center">
+    <thead class="bg-dark text-white text-center">
       <tr>
         <th>Imagen</th>
         <th>Nombre</th>
@@ -17,21 +17,26 @@
         <th>Categoría Cliente</th>
         <th>Vendedor</th>
         <th>Total</th>
-        <th>Estado</th> <!-- Dejar visible el estado -->
+        <th>Estado</th> <!-- Mostrar el estado -->
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let sale of sales" class="align-middle">
         <!-- Imagen del producto -->
         <td class="text-center">
-          <img [src]="sale.products[0]?.product_image || 'assets/placeholder.png'" alt="Producto" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+          <img
+            [src]="sale.products[0]?.product_image || 'assets/placeholder.png'"
+            alt="Producto"
+            class="img-thumbnail"
+            style="max-width: 150px; max-height: 150px; object-fit: cover;"
+          />
         </td>
         <!-- Nombre del producto -->
         <td>{{ sale.products[0]?.product_name || 'N/A' }}</td>
         <!-- Cantidad -->
         <td>{{ sale.products[0]?.quantity || 'N/A' }}</td>
         <!-- Precio -->
-        <td>{{ sale.products[0]?.price | currency:'USD':true }}</td>
+        <td>{{ sale.products[0]?.price | currency: 'USD': true }}</td>
         <!-- Cliente -->
         <td>{{ sale.products[0]?.client_name || 'N/A' }}</td>
         <!-- Categoría del cliente -->
@@ -39,14 +44,14 @@
         <!-- Vendedor -->
         <td>{{ sale.user_name || 'N/A' }}</td>
         <!-- Total -->
-        <td>{{ sale.total_price | currency:'USD':true }}</td>
+        <td>{{ sale.total_price | currency: 'USD': true }}</td>
         <!-- Estado -->
         <td class="text-center">
           <span class="badge"
                 [ngClass]="{
-                  'bg-success': sale.status === 'Completada',
-                  'bg-warning': sale.status === 'Pendiente',
-                  'bg-danger': sale.status === 'Cancelada'
+                  'bg-success': sale.status === 'Complete',
+                  'bg-danger': sale.status === 'Incomplete',
+                  'bg-warning': sale.status === 'Pending'
                 }">
             {{ sale.status || 'Sin estado' }}
           </span>
@@ -54,4 +59,4 @@
       </tr>
     </tbody>
   </table>
-</div>
+  

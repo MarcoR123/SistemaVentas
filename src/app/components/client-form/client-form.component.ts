@@ -5,13 +5,18 @@ import { ClientService } from '../../services/client.service';
 @Component({
     selector: 'app-client-form',
     templateUrl: './client-form.component.html',
-    standalone: false
+    standalone: false,
+    styleUrls: ['./client-form.component.css'],
 })
 export class ClientFormComponent {
   client = {
     nombre: '',
     categoria: '',
   };
+
+  message: string = ''; // Mensaje del modal
+  isModalVisible: boolean = false; // Controla la visibilidad del modal
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
 
   constructor(private clientService: ClientService, private router: Router) {}
 
@@ -22,17 +27,32 @@ export class ClientFormComponent {
 
     this.clientService.createClient(formData).subscribe({
       next: () => {
-        alert('Cliente creado exitosamente.');
-        this.router.navigate(['/clients']);
+        this.showModal('Cliente creado exitosamente.', 'success');
+        setTimeout(() => this.router.navigate(['/clients']), 2000); 
       },
       error: (err) => {
         console.error('Error al crear el cliente:', err);
-        alert('Error al crear el cliente.');
+        this.showModal(
+          'Error al crear el cliente. Por favor, intente nuevamente.',
+          'error'
+        );
       },
     });
   }
 
   cancel(): void {
     this.router.navigate(['/clients']);
+  }
+
+  // Muestra el modal con el mensaje y el tipo
+  showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 3000);
   }
 }

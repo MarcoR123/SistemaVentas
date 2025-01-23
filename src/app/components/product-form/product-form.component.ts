@@ -13,6 +13,7 @@ import { getApps, initializeApp } from '@angular/fire/app';
 @Component({
     selector: 'app-product-form',
     templateUrl: './product-form.component.html',
+    styleUrls: ['./product-form.component.css'],
     standalone: false
 })
 export class ProductFormComponent implements OnInit {
@@ -26,6 +27,11 @@ export class ProductFormComponent implements OnInit {
 
   clients: Client[] = []; // Lista de clientes
   selectedClient: string = ''; // Cliente seleccionado
+
+  message: string = ''; // Mensaje del modal
+  isModalVisible: boolean = false; // Controla la visibilidad del modal
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
+
 
   constructor(
     private productService: ProductService,
@@ -76,15 +82,33 @@ export class ProductFormComponent implements OnInit {
       formData.append('image', this.product.image);
     }
 
-    this.productService.createProduct(formData).subscribe(
-      () => {
-        this.router.navigate(['/products']);
+    this.productService.createProduct(formData).subscribe({
+      next: () => {
+        this.showModal('Producto creado exitosamente.', 'success');
+        setTimeout(() => {
+          this.router.navigate(['/products']);
+        }, 3000); // Redirigir después de 3 segundos
       },
-      (error) => console.error('Error al crear el producto:', error)
-    );
+      error: (err) => {
+        console.error('Error al crear el producto:', err);
+        this.showModal('Error al crear el producto.', 'error');
+      },
+    });
   }
 
   cancel(): void {
     this.router.navigate(['/products']);
+  }
+
+   // Muestra el modal con el mensaje y el tipo
+   showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 3000);
   }
 }

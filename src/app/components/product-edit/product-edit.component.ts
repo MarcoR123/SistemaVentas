@@ -13,6 +13,7 @@ import { getApps, initializeApp } from '@angular/fire/app';
 @Component({
     selector: 'app-product-edit',
     templateUrl: './product-edit.component.html',
+    styleUrls: ['./product-edit.component.css'],
     standalone: false
 })
 export class ProductEditComponent implements OnInit {
@@ -26,6 +27,9 @@ export class ProductEditComponent implements OnInit {
   productId: string | null = null;
   clients: Client[] = []; // Lista de clientes
 
+  message: string = ''; // Mensaje del modal
+  isModalVisible: boolean = false; // Controla la visibilidad del modal
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
 
   constructor(
     private productService: ProductService,
@@ -35,6 +39,9 @@ export class ProductEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (!getApps().length) {
+      initializeApp(environment.firebaseConfig);
+    }
     // Obtén el ID del producto de la URL
     this.productId = this.route.snapshot.paramMap.get('id');
     if (this.productId) {
@@ -87,14 +94,35 @@ export class ProductEditComponent implements OnInit {
 
     this.productService.updateProduct(this.productId!, formData).subscribe({
       next: () => {
-        alert('Producto actualizado con éxito');
-        this.router.navigate(['/products']);
+        this.showModal('Producto actualizado con éxito', 'success');
+        setTimeout(() => {
+          this.router.navigate(['/products']);
+        }, 3000); // Redirigir después de 3 segundos
       },
-      error: (err) => console.error('Error al actualizar el producto:', err),
+      error: (err) => {
+        console.error('Error al actualizar el producto:', err);
+        this.showModal(
+          'Error al actualizar el producto. Por favor, intente nuevamente.',
+          'error'
+        );
+      },
     });
   }
 
+
   cancel(): void {
     this.router.navigate(['/products']);
+  }
+
+   // Muestra el modal con el mensaje y el tipo
+   showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Ocultar modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 3000);
   }
 }

@@ -1,3 +1,86 @@
+<!-- Modal de Confirmación -->
+<div
+  class="modal fade"
+  [ngClass]="{ show: isConfirmVisible }"
+  [ngStyle]="{ display: isConfirmVisible ? 'block' : 'none', opacity: isConfirmVisible ? '1' : '0' }"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title">Confirmación</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cancelDelete()"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Está seguro de que desea eliminar este cliente?</p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+        >
+          Eliminar
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cancelDelete()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Mensaje -->
+<div
+  class="modal fade"
+  [ngClass]="{ show: isModalVisible }"
+  [ngStyle]="{ display: isModalVisible ? 'block' : 'none', opacity: isModalVisible ? '1' : '0' }"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div
+      class="modal-content"
+      [ngClass]="modalType === 'success' ? 'bg-success text-white' : 'bg-danger text-white'"
+    >
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ modalType === 'success' ? 'Éxito' : 'Error' }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="isModalVisible = false"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-light"
+          (click)="isModalVisible = false"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de clientes -->
 <div class="container mt-5 p-4 rounded shadow-lg bg-white">
   <h2 class="text-center text-primary mb-4">Lista de Clientes</h2>
 
@@ -27,13 +110,14 @@
         <td>{{ client.nombre || 'N/A' }}</td>
         <td>
           <span class="badge"
-                [ngClass]="{
-                  'bg-info text-white': client.categoria === 'Internet',
-                  'bg-success text-white': client.categoria === 'Electrodomesticos',
-                  'bg-primary text-white': client.categoria === 'Laptops',
-                  'bg-danger text-white': client.categoria === 'Farmacia',
-                  'bg-dark text-white': client.categoria === 'Administrador'
-                }">
+            [ngClass]="{
+              'bg-info text-white': client.categoria === 'Internet',
+              'bg-success text-white': client.categoria === 'Electrodomesticos',
+              'bg-primary text-white': client.categoria === 'Laptops',
+              'bg-danger text-white': client.categoria === 'Farmacia',
+              'bg-dark text-white': client.categoria === 'Administrador'
+            }"
+          >
             {{ client.categoria || 'Sin categoría' }}
           </span>
         </td>
@@ -42,7 +126,10 @@
             <button class="btn btn-primary btn-sm" (click)="editClient(client.id)">
               <i class="bi bi-pencil"></i> Editar
             </button>
-            <button class="btn btn-danger btn-sm" (click)="deleteClient(client.id)">
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="showConfirm(client.id)"
+            >
               <i class="bi bi-trash"></i> Eliminar
             </button>
           </div>

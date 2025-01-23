@@ -1,10 +1,19 @@
 <div class="container mt-5 p-4 rounded shadow-lg bg-white">
   <h2 class="text-center mb-4 text-primary">Lista de Productos</h2>
 
+  <!-- Mensaje de error -->
   <div *ngIf="errorMessage" class="alert alert-danger text-center">
     {{ errorMessage }}
   </div>
 
+  <!-- Botón de Crear Producto -->
+  <div class="text-center mt-4">
+    <button routerLink="/products/new" class="btn btn-success btn-lg shadow-sm">
+      <i class="bi bi-plus-lg"></i> Crear Producto
+    </button>
+  </div>
+
+  <!-- Tabla de Productos -->
   <table class="table table-hover table-bordered mt-3 custom-table shadow-sm">
     <thead class="thead-light bg-light text-center">
       <tr>
@@ -12,41 +21,101 @@
         <th>Nombre</th>
         <th>Descripción</th>
         <th>Precio</th>
-        <th>Marca</th> <!-- Nuevo -->
-        <th>Categoría</th> <!-- Nuevo -->
+        <th>Marca</th>
+        <th>Categoría</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let product of products" class="align-middle">
         <td class="text-center">
-          <img *ngIf="product.image" [src]="product.image" alt="{{ product.name }}" 
-               class="img-thumbnail rounded shadow-sm" 
-               style="width: 150px; height: 150px; object-fit: cover;">
+          <img
+            *ngIf="product.image"
+            [src]="product.image"
+            alt="{{ product.name }}"
+            class="img-thumbnail rounded shadow-sm"
+            style="width: 150px; height: 150px; object-fit: cover;"
+          />
           <span *ngIf="!product.image" class="text-muted">Sin imagen</span>
         </td>
         <td class="fw-bold">{{ product.name }}</td>
         <td>{{ product.description }}</td>
-        <td>{{ product.price | currency:'USD':true }}</td>
-        <td>{{ product.clientName }}</td> <!-- Nuevo -->
-        <td>{{ product.clientCategory }}</td> <!-- Nuevo -->
+        <td>{{ product.price | currency: 'USD': true }}</td>
+        <td>{{ product.clientName }}</td>
+        <td>{{ product.clientCategory }}</td>
         <td class="text-center">
           <div class="d-flex justify-content-center gap-2">
-            <button *ngIf="product.id" (click)="editProduct(product.id)" class="btn btn-outline-primary btn-sm">
+            <button (click)="editProduct(product.id)" class="btn btn-outline-primary btn-sm">
               <i class="bi bi-pencil"></i> Editar
             </button>
-            <button *ngIf="product.id" (click)="deleteProduct(product.id)" class="btn btn-outline-danger btn-sm">
+            <button *ngIf="product.id" (click)="showConfirm(product.id!)" class="btn btn-outline-danger btn-sm">
               <i class="bi bi-trash"></i> Eliminar
-            </button>
+            </button>            
           </div>
         </td>
       </tr>
     </tbody>
   </table>
+</div>
 
-  <div class="text-center mt-4">
-    <button routerLink="/products/new" class="btn btn-success btn-lg shadow-sm">
-      <i class="bi bi-plus-lg"></i> Crear Producto
-    </button>
+<!-- Modal de Confirmación -->
+<div
+  class="modal fade"
+  [ngClass]="{ show: isConfirmVisible }"
+  [ngStyle]="{ display: isConfirmVisible ? 'block' : 'none', opacity: isConfirmVisible ? '1' : '0' }"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title">Confirmación</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cancelDelete()"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Está seguro de que desea eliminar este producto?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Eliminar</button>
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Notificación -->
+<div
+  class="modal fade"
+  [ngClass]="{ show: isModalVisible }"
+  [ngStyle]="{ display: isModalVisible ? 'block' : 'none', opacity: isModalVisible ? '1' : '0' }"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div
+      class="modal-content"
+      [ngClass]="modalType === 'success' ? 'bg-success text-white' : 'bg-danger text-white'"
+    >
+      <div class="modal-header">
+        <h5 class="modal-title">{{ modalType === 'success' ? 'Éxito' : 'Error' }}</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="isModalVisible = false"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="isModalVisible = false">Cerrar</button>
+      </div>
+    </div>
   </div>
 </div>

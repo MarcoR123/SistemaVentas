@@ -29,3 +29,12 @@
     background-color: #f8f9fa;
   }
   
+  .modal.show {
+    display: block;
+    opacity: 1;
+  }
+  
+  .modal.fade {
+    transition: opacity 0.3s ease-in-out;
+  }
+  

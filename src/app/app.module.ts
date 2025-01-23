@@ -43,7 +43,6 @@ import { environment } from '../environments/environment';
 import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 
 
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -63,8 +62,7 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
     ClientFormComponent,
     ClientEditComponent,
     ReportsComponent,
-    DashboardComponent
-  ],
+    DashboardComponent  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -84,7 +82,7 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
     MatDatepickerModule,
     MatNativeDateModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireStorageModule
+    AngularFireStorageModule,
     ],
   providers: [],
   bootstrap: [AppComponent]

@@ -97,6 +97,7 @@ export class ReportsComponent implements OnInit {
           user_name: user?.name || 'Usuario Desconocido',
           lat: sale.geolocation?.latitude || 0,
           long: sale.geolocation?.longitude || 0,
+          attachments: sale.attachments !== 'null' ? sale.attachments : null, // Validación
         };
       })
     );
@@ -191,7 +192,7 @@ async mapSupportData(data: any[]): Promise<any[]> {
         user_name: user?.name || 'N/A',
         lat: support.geolocation?.latitude || 0,
         long: support.geolocation?.longitude || 0,
-        
+        attachments: support.attachments !== 'null' ? support.attachments : null, // Validación
       };
     })
   );
@@ -202,7 +203,6 @@ async mapSupportData(data: any[]): Promise<any[]> {
    * Rellenar las listas de filtros con vendedores y clientes únicos
    */
   populateFilters(): void {
-    // Crear conjuntos para evitar duplicados
     const allVendedores = new Set<string>();
     const allClientes = new Set<string>();
   
@@ -224,10 +224,17 @@ async mapSupportData(data: any[]): Promise<any[]> {
       if (user.clientName) allClientes.add(user.clientName);
     });
   
-    // Convertir los conjuntos en listas
     this.vendedores = ['Todos', ...Array.from(allVendedores)];
     this.clientes = ['Todos', ...Array.from(allClientes)];
+
+    console.log('Ventas cargadas:', this.salesData);
+    console.log('Usuarios cargados:', this.usersData);
+    console.log('Soporte cargado:', this.supportData);
+    console.log('Vendedores:', this.vendedores);
+    console.log('Clientes:', this.clientes);
+
   }
+  
   
 
   /**
@@ -235,24 +242,35 @@ async mapSupportData(data: any[]): Promise<any[]> {
    */
   filterData(): void {
     const selectedData = this.getSelectedData();
+
+    console.log('Datos sin filtrar:', selectedData);
+    console.log('Vendedor seleccionado:', this.selectedVendedor);
+    console.log('Cliente seleccionado:', this.selectedClientName);
+    console.log('Fecha de inicio:', this.startDate);
+    console.log('Fecha fin:', this.endDate);
+
   
     this.filteredData = selectedData.filter((item) => {
       const itemDate = new Date(item.date);
       const startDateValid = !this.startDate || itemDate >= new Date(this.startDate);
-      
-      // Sumamos un día al `endDate` para incluir toda la fecha seleccionada
+  
+      // Ajustar el endDate sumando un día para incluir toda la fecha seleccionada
       const adjustedEndDate = this.endDate ? new Date(this.endDate) : null;
       if (adjustedEndDate) {
         adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
       }
-  
       const endDateValid = !this.endDate || (adjustedEndDate && itemDate < adjustedEndDate);
   
-      return startDateValid && endDateValid;
+      // Validación de vendedor y cliente (ignorando mayúsculas/minúsculas)
+      const vendedorValid = this.selectedVendedor === 'Todos' || item.user_name?.toLowerCase().trim() === this.selectedVendedor.toLowerCase().trim();
+      const clienteValid = this.selectedClientName === 'Todos' || item.client_name?.toLowerCase().trim() === this.selectedClientName.toLowerCase().trim();
+  
+      return startDateValid && endDateValid && vendedorValid && clienteValid;
     });
   
     this.noDataMessage = this.filteredData.length === 0 ? 'No se encontraron datos para los filtros seleccionados.' : '';
   }
+  
   
   
   
@@ -276,6 +294,7 @@ async mapSupportData(data: any[]): Promise<any[]> {
     return this.supportData;
   }
 
+
   /**
    * Exportar a Excel
    */
@@ -283,96 +302,193 @@ async mapSupportData(data: any[]): Promise<any[]> {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(`Informe de ${this.selectedReport}`);
   
-    if (this.selectedReport === 'ventas') {
-      worksheet.columns = [
-        { header: 'Fecha de Venta', key: 'date', width: 20 },
-        { header: 'Producto', key: 'product_name', width: 30 },
-        { header: 'Cliente', key: 'client_name', width: 25 },
-        { header: 'Categoría', key: 'client_category', width: 20 },
-        { header: 'Vendedor', key: 'user_name', width: 20 },
-        { header: 'Cantidad', key: 'quantity', width: 10 },
-        { header: 'Precio Unitario', key: 'price', width: 15 },
-        { header: 'Latitud', key: 'lat', width: 15 },
-        { header: 'Longitud', key: 'long', width: 15 },
-        { header: 'Estado', key: 'status', width: 15 },
-        { header: 'Total', key: 'total_price', width: 15 },
-        { header: 'Adjunto', key: 'attachments', width: 30 },
-      ];
+    // Agregar logo de Salesland desde la URL
+    const logoUrl =
+      'https://firebasestorage.googleapis.com/v0/b/sistema-ventas-pxygt3.firebasestorage.app/o/users%2Fuploads%2FLOGO%20SALESLAND.png?alt=media&token=4d1ca45e-fd00-4647-a2ec-7ae8dc16b862';
+    fetch(logoUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          const imageId = workbook.addImage({ base64, extension: 'png' });
+          worksheet.addImage(imageId, 'A1:D5');
   
-      this.filteredData.forEach((sale) => {
-        worksheet.addRow({
-          date: new Date(sale.date).toLocaleDateString(),
-          product_name: sale.product_name,
-          client_name: sale.client_name,
-          client_category: sale.client_category,
-          user_name: sale.user_name,
-          quantity: sale.products[0]?.quantity || 0,
-          price: `$${sale.products[0]?.price?.toFixed(2) || '0.00'}`,
-          lat: sale.lat.toFixed(6),
-          long: sale.long.toFixed(6),
-          status: sale.status || 'N/A',
-          total_price: `$${sale.total_price?.toFixed(2) || '0.00'}`,
-          attachments: sale.attachments ? 'Imagen adjunta' : 'Sin adjunto',
-        });
+          // Ajustar espacio para el logo
+          worksheet.mergeCells('A1:D5');
+  
+          // Configurar encabezados y columnas según el reporte seleccionado
+          let headers: string[];
+          let columns: { key: string; width: number }[];
+          if (this.selectedReport === 'ventas') {
+            headers = [
+              'Fecha de Venta',
+              'Producto',
+              'Cliente',
+              'Categoría',
+              'Vendedor',
+              'Cantidad',
+              'Precio Unitario',
+              'Latitud',
+              'Longitud',
+              'Estado',
+              'Total',
+              'Adjunto',
+            ];
+            columns = [
+              { key: 'date', width: 20 },
+              { key: 'product_name', width: 30 },
+              { key: 'client_name', width: 25 },
+              { key: 'client_category', width: 20 },
+              { key: 'user_name', width: 20 },
+              { key: 'quantity', width: 10 },
+              { key: 'price', width: 15 },
+              { key: 'lat', width: 15 },
+              { key: 'long', width: 15 },
+              { key: 'status', width: 15 },
+              { key: 'total_price', width: 15 },
+              { key: 'attachments', width: 25 },
+            ];
+          } else if (this.selectedReport === 'vendedores') {
+            headers = ['Nombre', 'Correo Electrónico', 'Rol', 'Región Asignada', 'Cliente'];
+            columns = [
+              { key: 'name', width: 30 },
+              { key: 'email', width: 30 },
+              { key: 'role', width: 20 },
+              { key: 'assigned_region', width: 25 },
+              { key: 'clientName', width: 25 },
+            ];
+          } else {
+            headers = [
+              'Fecha',
+              'Producto',
+              'Cliente',
+              'Usuario',
+              'Comentarios',
+              'Capacitación',
+              'Queja',
+              'Latitud',
+              'Longitud',
+              'Adjunto',
+            ];
+            columns = [
+              { key: 'date', width: 20 },
+              { key: 'product_name', width: 30 },
+              { key: 'client_name', width: 25 },
+              { key: 'user_name', width: 20 },
+              { key: 'comments', width: 35 },
+              { key: 'training', width: 10 },
+              { key: 'complaint', width: 10 },
+              { key: 'lat', width: 15 },
+              { key: 'long', width: 15 },
+              { key: 'attachments', width: 25 },
+            ];
+          }
+  
+          // Establecer encabezados en la fila 8
+          worksheet.getRow(8).values = headers;
+  
+          // Aplicar estilo a los encabezados
+          worksheet.getRow(8).eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0070C0' } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' },
+            };
+          });
+  
+          // Configurar columnas
+          worksheet.columns = columns;
+  
+          // Añadir datos a partir de la fila 9
+          this.filteredData.forEach((data) => {
+            if (this.selectedReport === 'ventas') {
+              const hyperLink = data.attachments
+                ? {
+                    text: 'Ver imagen',
+                    hyperlink: data.attachments,
+                  }
+                : 'Sin adjunto';
+              const row = worksheet.addRow({
+                date: new Date(data.date).toLocaleDateString(),
+                product_name: data.product_name,
+                client_name: data.client_name,
+                client_category: data.client_category,
+                user_name: data.user_name,
+                quantity: data.products[0]?.quantity || 0,
+                price: `$${data.products[0]?.price?.toFixed(2) || '0.00'}`,
+                lat: data.lat.toFixed(6),
+                long: data.long.toFixed(6),
+                status: data.status || 'N/A',
+                total_price: `$${data.total_price?.toFixed(2) || '0.00'}`,
+                attachments: hyperLink,
+              });
+              if (hyperLink !== 'Sin adjunto') {
+                const cell = row.getCell('attachments');
+                cell.value = hyperLink;
+                cell.font = { color: { argb: 'FF0000FF' }, underline: true };
+              }
+            } else if (this.selectedReport === 'vendedores') {
+              worksheet.addRow({
+                name: data.name || 'Sin nombre',
+                email: data.email || 'Sin correo',
+                role: data.role || 'Sin rol',
+                assigned_region: data.assigned_region || 'Sin región',
+                clientName: data.clientName || 'Sin cliente',
+              });
+            } else {
+              const hyperLink = data.attachments
+                ? {
+                    text: 'Ver imagen',
+                    hyperlink: data.attachments,
+                  }
+                : 'Sin adjunto';
+              const row = worksheet.addRow({
+                date: new Date(data.date).toLocaleDateString(),
+                product_name: data.product_name || 'N/A',
+                client_name: data.client_name || 'N/A',
+                user_name: data.user_name || 'N/A',
+                comments: data.comments || 'Sin comentarios',
+                training: data.training ? 'Sí' : 'No',
+                complaint: data.complaint ? 'Sí' : 'No',
+                lat: data.lat?.toFixed(6),
+                long: data.long?.toFixed(6),
+                attachments: hyperLink,
+              });
+              if (hyperLink !== 'Sin adjunto') {
+                const cell = row.getCell('attachments');
+                cell.value = hyperLink;
+                cell.font = { color: { argb: 'FF0000FF' }, underline: true };
+              }
+            }
+          });
+  
+          // Estilo de todas las filas
+          worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber > 8) {
+              row.eachCell((cell) => {
+                cell.border = {
+                  top: { style: 'thin' },
+                  left: { style: 'thin' },
+                  bottom: { style: 'thin' },
+                  right: { style: 'thin' },
+                };
+                cell.alignment = { vertical: 'middle', wrapText: true };
+              });
+            }
+          });
+  
+          // Guardar archivo
+          workbook.xlsx.writeBuffer().then((buffer) => {
+            FileSaver.saveAs(new Blob([buffer]), `Informe_de_${this.selectedReport}.xlsx`);
+          });
+        };
+        reader.readAsDataURL(blob);
       });
-    } else if (this.selectedReport === 'vendedores') {
-      worksheet.columns = [
-        { header: 'Nombre', key: 'name', width: 30 },
-        { header: 'Correo Electrónico', key: 'email', width: 30 },
-        { header: 'Rol', key: 'role', width: 20 },
-        { header: 'Región Asignada', key: 'assigned_region', width: 25 },
-        { header: 'Cliente', key: 'clientName', width: 25 },
-      ];
-  
-      this.filteredData.forEach((user) => {
-        worksheet.addRow({
-          name: user.name || 'Sin nombre',
-          email: user.email || 'Sin correo',
-          role: user.role || 'Sin rol',
-          assigned_region: user.assigned_region || 'Sin región',
-          clientName: user.clientName || 'Sin cliente',
-        });
-      });
-    } else if (this.selectedReport === 'soporte') {
-      worksheet.columns = [
-        { header: 'Fecha', key: 'date', width: 20 },
-        { header: 'Producto', key: 'product_name', width: 30 },
-        { header: 'Cliente', key: 'client_name', width: 25 },
-        { header: 'Usuario', key: 'user_name', width: 20 },
-        { header: 'Comentarios', key: 'comments', width: 35 },
-        { header: 'Capacitación', key: 'training', width: 10 },
-        { header: 'Queja', key: 'complaint', width: 10 },
-        { header: 'Latitud', key: 'lat', width: 15 },
-        { header: 'Longitud', key: 'long', width: 15 },
-        { header: 'Adjuntos', key: 'attachments', width: 30 },
-      ];
-  
-      this.filteredData.forEach((support) => {
-        worksheet.addRow({
-          date: new Date(support.date).toLocaleDateString(),
-          product_name: support.product_name || 'N/A',
-          client_name: support.client_name || 'N/A',
-          user_name: support.user_name || 'N/A',
-          comments: support.comments || 'Sin comentarios',
-          training: support.training ? 'Sí' : 'No',
-          complaint: support.complaint ? 'Sí' : 'No',
-          lat: support.lat.toFixed(6),
-          long: support.long.toFixed(6),
-          attachments: support.attachments ? 'Imagen adjunta' : 'Sin adjuntos',
-        });
-      });
-    }
-  
-    // Estilo de encabezado para todas las hojas
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0070C0' } };
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
-    });
-  
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      FileSaver.saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `Informe_de_${this.selectedReport}.xlsx`);
-    });
   }
   
 
@@ -380,117 +496,131 @@ async mapSupportData(data: any[]): Promise<any[]> {
    * Exportar a PDF
    */
   exportToPDF(): void {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-    putOnlyUsedFonts: true,
-  });
-
-  const leftMargin = 20; // Margen izquierdo
-  const topMargin = 15; // Margen superior inicial
-  const lineHeight = 8; // Espaciado entre líneas
-  const maxWidth = 170; // Ancho máximo para texto
-  const pageWidth = doc.internal.pageSize.width - leftMargin * 2;
-  let yPos = topMargin; // Posición Y inicial
-
-  const title = `Informe de ${this.selectedReport}`;
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text(title, leftMargin + pageWidth / 2, yPos, { align: 'center' });
-  yPos += 15;
-
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-
-  this.filteredData.forEach((entry, index) => {
-    if (yPos + lineHeight * 10 > 280) {
-      doc.addPage();
-      yPos = topMargin;
-    }
-
-    doc.setFontSize(14);
-    doc.text(`Registro #${index + 1}`, leftMargin, yPos);
-    yPos += lineHeight;
-
-    doc.setFontSize(12);
-
-    if (this.selectedReport === 'ventas') {
-      doc.text(`Fecha de Venta: ${new Date(entry.date).toLocaleDateString()}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Producto: ${entry.product_name || 'N/A'}`, leftMargin, yPos, { maxWidth });
-      yPos += lineHeight;
-      doc.text(`Cliente: ${entry.client_name || 'N/A'}`, leftMargin, yPos, { maxWidth });
-      yPos += lineHeight;
-      doc.text(`Categoría: ${entry.client_category || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Vendedor: ${entry.user_name || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Cantidad: ${entry.products?.[0]?.quantity || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Precio Unitario: $${entry.products?.[0]?.price?.toFixed(2) || '0.00'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Total: $${entry.total_price?.toFixed(2) || '0.00'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Latitud: ${entry.lat?.toFixed(6) || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Longitud: ${entry.long?.toFixed(6) || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Estado: ${entry.status || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-    } else if (this.selectedReport === 'vendedores') {
-      doc.text(`Nombre: ${entry.name || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Correo Electrónico: ${entry.email || 'N/A'}`, leftMargin, yPos, { maxWidth });
-      yPos += lineHeight;
-      doc.text(`Rol: ${entry.role || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Región Asignada: ${entry.assigned_region || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Cliente: ${entry.clientName || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-    } else if (this.selectedReport === 'soporte') {
-      doc.text(`Fecha: ${new Date(entry.date).toLocaleDateString()}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Producto: ${entry.product_name || 'N/A'}`, leftMargin, yPos, { maxWidth });
-      yPos += lineHeight;
-      doc.text(`Cliente: ${entry.client_name || 'N/A'}`, leftMargin, yPos, { maxWidth });
-      yPos += lineHeight;
-      doc.text(`Usuario: ${entry.user_name || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Comentarios: ${entry.comments || 'Sin comentarios'}`, leftMargin, yPos, { maxWidth });
-      yPos += lineHeight + 5;
-      doc.text(`Capacitación: ${entry.training ? 'Sí' : 'No'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Queja: ${entry.complaint ? 'Sí' : 'No'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Latitud: ${entry.lat?.toFixed(6) || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-      doc.text(`Longitud: ${entry.long?.toFixed(6) || 'N/A'}`, leftMargin, yPos);
-      yPos += lineHeight;
-    }
-
-    // Adjuntos (Imágenes)
-    const hasAttachment = entry.attachments && entry.attachments.startsWith('data:image');
-    doc.text(`Adjunto: ${hasAttachment ? 'Sí (ver imagen)' : 'Sin adjunto'}`, leftMargin, yPos);
-    yPos += lineHeight + 5;
-
-    if (hasAttachment) {
-      const imageWidth = 50;
-      const imageHeight = 50;
-      if (yPos + imageHeight > 280) {
-        doc.addPage();
-        yPos = topMargin;
-      }
-      doc.addImage(entry.attachments, 'JPEG', leftMargin, yPos, imageWidth, imageHeight);
-      yPos += imageHeight + 10; // Añadir espacio después de la imagen
-    }
-  });
-
-  doc.save(`Informe_de_${this.selectedReport}.pdf`);
-}
-
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      putOnlyUsedFonts: true,
+    });
   
+    const topMargin = 20; // Margen superior inicial
+    const lineHeight = 8; // Espaciado entre líneas
+    const maxWidth = 170; // Ancho máximo para texto
+    const pageWidth = doc.internal.pageSize.width; // Ancho de la página
+    const pageHeight = doc.internal.pageSize.height; // Altura de la página
+    let yPos = topMargin; // Posición Y inicial
   
-
-}
+    // Agregar logo centrado
+    const logoUrl =
+      'https://firebasestorage.googleapis.com/v0/b/sistema-ventas-pxygt3.firebasestorage.app/o/users%2Fuploads%2FLOGO%20SALESLAND.png?alt=media&token=b37f22c1-3e16-40a1-82f8-daecda6ce88f';
+    const logoWidth = 60; // Ancho del logo
+    const logoHeight = 20; // Altura del logo
+  
+    const addLogo = (callback: () => void) => {
+      const img = new Image();
+      img.src = logoUrl;
+      img.onload = () => {
+        const xPos = (pageWidth - logoWidth) / 2; // Centrado horizontal
+        doc.addImage(img, 'PNG', xPos, yPos, logoWidth, logoHeight);
+        yPos += logoHeight + 15;
+        callback();
+      };
+    };
+  
+    addLogo(() => {
+      // Título
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Informe de ${this.selectedReport}`, pageWidth / 2, yPos, { align: 'center' });
+      yPos += 15;
+  
+      // Contenido
+      this.filteredData.forEach((entry, index) => {
+        if (yPos + lineHeight * 12 > pageHeight - 20) {
+          doc.addPage();
+          yPos = topMargin + logoHeight + 15; // Nuevo margen tras agregar logo
+        }
+  
+        // Encabezado del registro
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Registro #${index + 1}`, 20, yPos);
+        yPos += lineHeight;
+  
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+  
+        if (this.selectedReport === 'ventas') {
+          doc.text(`Fecha de Venta: ${new Date(entry.date).toLocaleDateString()}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Producto: ${entry.product_name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Cliente: ${entry.client_name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Categoría: ${entry.client_category || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Vendedor: ${entry.user_name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Cantidad: ${entry.products?.[0]?.quantity || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Precio Unitario: $${entry.products?.[0]?.price?.toFixed(2) || '0.00'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Total: $${entry.total_price?.toFixed(2) || '0.00'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Latitud: ${entry.lat?.toFixed(6) || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Longitud: ${entry.long?.toFixed(6) || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Estado: ${entry.status || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+        } else if (this.selectedReport === 'vendedores') {
+          doc.text(`Nombre: ${entry.name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Correo Electrónico: ${entry.email || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Rol: ${entry.role || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Región Asignada: ${entry.assigned_region || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Cliente: ${entry.clientName || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+        } else if (this.selectedReport === 'soporte') {
+          doc.text(`Fecha: ${new Date(entry.date).toLocaleDateString()}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Producto: ${entry.product_name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Cliente: ${entry.client_name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Usuario: ${entry.user_name || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Comentarios: ${entry.comments || 'Sin comentarios'}`, 20, yPos, { maxWidth });
+          yPos += lineHeight;
+          doc.text(`Capacitación: ${entry.training ? 'Sí' : 'No'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Queja: ${entry.complaint ? 'Sí' : 'No'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Latitud: ${entry.lat?.toFixed(6) || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+          doc.text(`Longitud: ${entry.long?.toFixed(6) || 'N/A'}`, 20, yPos);
+          yPos += lineHeight;
+        }
+  
+        // Hipervínculo para el adjunto
+        if (entry.attachments && entry.attachments.startsWith('http')) {
+          doc.setTextColor(0, 0, 255);
+          doc.textWithLink('Ver imagen', 20, yPos, { url: entry.attachments });
+          yPos += lineHeight;
+          doc.setTextColor(0, 0, 0);
+        } else {
+          doc.text(`Adjunto: Sin adjunto`, 20, yPos);
+          yPos += lineHeight;
+        }
+  
+        yPos += 5; // Espacio entre registros
+      });
+  
+      // Guardar el PDF
+      doc.save(`Informe_de_${this.selectedReport}.pdf`);
+    });
+  }
+}  

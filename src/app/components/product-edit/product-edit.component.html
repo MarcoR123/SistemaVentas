@@ -1,5 +1,45 @@
 <h2>Editar Producto</h2>
 
+<!-- Modal de Mensaje -->
+<div
+  class="modal fade"
+  [ngClass]="{ show: isModalVisible }"
+  [ngStyle]="{ display: isModalVisible ? 'block' : 'none', opacity: isModalVisible ? '1' : '0' }"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div
+      class="modal-content"
+      [ngClass]="modalType === 'success' ? 'bg-success text-white' : 'bg-danger text-white'"
+    >
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ modalType === 'success' ? 'Éxito' : 'Error' }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="isModalVisible = false"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-light"
+          (click)="isModalVisible = false"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <form (ngSubmit)="updateProduct()" #productForm="ngForm" enctype="multipart/form-data">
   <!-- Nombre del Producto -->
   <div class="mb-3">

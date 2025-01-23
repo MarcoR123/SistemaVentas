@@ -8,7 +8,8 @@ import { Client } from '../../models/client.model';
 @Component({
     selector: 'app-user-form',
     templateUrl: './user-form.component.html',
-    standalone: false
+    standalone: false,
+    styleUrls: ['./user-form.component.css']
 })
 export class UserFormComponent implements OnInit {
   user: User = {
@@ -22,6 +23,10 @@ export class UserFormComponent implements OnInit {
   };
 
   clients: Client[] = []; // Lista de clientes para el desplegable
+
+  message: string = ''; // Mensaje del modal
+  isModalVisible: boolean = false; // Controla la visibilidad del modal
+  modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
 
   constructor(
     private userService: UserService,
@@ -55,17 +60,28 @@ export class UserFormComponent implements OnInit {
 
     this.userService.createUser(formData).subscribe({
       next: () => {
-        alert('Usuario creado con éxito');
-        this.router.navigate(['/users']);
+        this.showModal('Usuario creado con éxito.', 'success');
+        setTimeout(() => this.router.navigate(['/users']), 2000); // Redirige después de 3 segundos
       },
       error: (err) => {
         console.error('Error al crear el usuario', err);
-        alert('Error al crear el usuario');
+        this.showModal('Error al crear el usuario. Por favor, intente nuevamente.', 'error');
       },
     });
   }
 
   onCancel(): void {
     this.router.navigate(['/users']);
+  }
+
+  showModal(message: string, type: 'success' | 'error'): void {
+    this.message = message;
+    this.modalType = type;
+    this.isModalVisible = true;
+
+    // Oculta el modal automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.isModalVisible = false;
+    }, 3000);
   }
 }

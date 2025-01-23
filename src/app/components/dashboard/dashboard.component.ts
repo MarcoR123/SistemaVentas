@@ -5,18 +5,21 @@ import { ClientService } from '../../services/client.service';
 import { UserService } from '../../services/user.service';
 import { CustomerSupportService } from '../../services/customer-support.service';
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend } from 'chart.js';
+import * as L from 'leaflet';
+import 'leaflet.markercluster';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend);
 
 @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.css'],
-    standalone: false
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
+  standalone: false,
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('salesChart') salesChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('supportChart') supportChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('map') mapContainer!: ElementRef<HTMLDivElement>;
 
   sales: any[] = [];
   products: any[] = [];
@@ -24,6 +27,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   users: any[] = [];
   customerSupportReports: any[] = [];
   filteredSales: any[] = [];
+  map: any;
 
   totalSales: number = 0;
   totalProducts: number = 0;
@@ -42,21 +46,40 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   private salesChartInstance: any; // Referencia al gráfico de ventas
   private supportChartInstance: any; // Referencia al gráfico de soporte
 
+  // Declarar defaultIcon como propiedad de clase
+  defaultIcon = L.icon({
+    iconUrl: 'assets/marker-icon.png',
+    shadowUrl: 'assets/marker-shadow.png',
+    iconSize: [25, 41], // Tamaño del ícono
+    iconAnchor: [12, 41], // Punto de anclaje
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+
   constructor(
     private saleService: SaleService,
     private productService: ProductService,
     private clientService: ClientService,
     private userService: UserService,
     private customerSupportService: CustomerSupportService
-  ) {}
+  ) {
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'assets/marker-icon-2x.png',
+      iconUrl: 'assets/marker-icon.png',
+      shadowUrl: 'assets/marker-shadow.png',
+    });
+  }
 
   ngOnInit(): void {
     this.loadAllData();
   }
 
   ngAfterViewInit(): void {
-    this.renderSalesChart();
-    this.renderSupportChart();
+    setTimeout(() => {
+      this.renderSalesChart();
+      this.renderSupportChart();
+      this.initializeMap();
+    }, 100); // Pequeño retraso para asegurar la carga
   }
 
   loadAllData(): void {
@@ -65,6 +88,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.filteredSales = sales;
       this.calculateSalesKPIs();
       this.renderSalesChart();
+      this.addSalesToMap();
     });
 
     this.productService.getProducts().subscribe((products) => {
@@ -89,13 +113,48 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  initializeMap(): void {
+    this.map = L.map(this.mapContainer.nativeElement).setView([-1.8312, -78.1834], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(this.map);
+
+    const markerCluster = L.markerClusterGroup();
+    this.sales.forEach((sale) => {
+      if (sale.geolocation) {
+        const { latitude, longitude } = sale.geolocation;
+        const marker = L.marker([latitude, longitude], { icon: this.defaultIcon }).bindPopup(
+          `<strong>Cliente:</strong> ${sale.client_name || 'Desconocido'}<br>
+          <strong>Total Venta:</strong> $${sale.total_price.toFixed(2)}`
+        );
+        markerCluster.addLayer(marker);
+      }
+    });
+
+    this.map.addLayer(markerCluster);
+  }
+
+  addSalesToMap(): void {
+    this.sales.forEach((sale) => {
+      if (sale.geolocation) {
+        const { latitude, longitude } = sale.geolocation;
+        L.marker([latitude, longitude], { icon: this.defaultIcon })
+          .addTo(this.map)
+          .bindPopup(`<strong>Cliente:</strong> ${sale.client_name || 'Desconocido'}<br>
+                      <strong>Total Venta:</strong> $${sale.total_price.toFixed(2)}`);
+      }
+    });
+  }
+
+  
+
   calculateSalesKPIs(): void {
-    this.totalSales = this.sales.reduce((sum, sale) => sum + sale.total_price, 0);
+    this.totalSales = this.filteredSales.reduce((sum, sale) => sum + sale.total_price, 0);
 
     const salesByProduct: { [productId: string]: number } = {};
     const salesByUser: { [userId: string]: number } = {};
 
-    this.sales.forEach((sale) => {
+    this.filteredSales.forEach((sale) => {
       const productId = sale.products[0]?.product_id;
       const userId = sale.user_id;
 
@@ -104,10 +163,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
 
     const bestProductId = Object.keys(salesByProduct).reduce((a, b) =>
-      salesByProduct[a] > salesByProduct[b] ? a : b
+      salesByProduct[a] > salesByProduct[b] ? a : b,
+      ''
     );
     const bestUserId = Object.keys(salesByUser).reduce((a, b) =>
-      salesByUser[a] > salesByUser[b] ? a : b
+      salesByUser[a] > salesByUser[b] ? a : b,
+      ''
     );
 
     this.mostSoldProduct = this.products.find((p) => p.id === bestProductId)?.name || 'Desconocido';
@@ -119,7 +180,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.totalComplaints = 0;
     this.totalTrainings = 0;
 
-    this.customerSupportReports.forEach((report) => {
+    const filteredSupportReports = this.customerSupportReports.filter((report) => {
+      const matchesClient = !this.selectedClientId || report.client_id === this.selectedClientId;
+      const matchesUser = !this.selectedUserId || report.user_id === this.selectedUserId;
+      return matchesClient && matchesUser;
+    });
+
+    filteredSupportReports.forEach((report) => {
       if (report.complaint) {
         this.totalComplaints++;
         const productId = report.product_id;
@@ -131,7 +198,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
 
     const mostComplainedProductId = Object.keys(complaintsByProduct).reduce((a, b) =>
-      complaintsByProduct[a] > complaintsByProduct[b] ? a : b
+      complaintsByProduct[a] > complaintsByProduct[b] ? a : b,
+      ''
     );
 
     this.mostComplainedProduct = this.products.find((p) => p.id === mostComplainedProductId)?.name || 'Desconocido';
@@ -143,6 +211,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       const matchesUser = !this.selectedUserId || sale.user_id === this.selectedUserId;
       return matchesClient && matchesUser;
     });
+
+    this.calculateSalesKPIs();
     this.renderSalesChart();
   }
 
@@ -150,13 +220,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.selectedClientId = '';
     this.selectedUserId = '';
     this.filteredSales = this.sales;
+    this.calculateSalesKPIs();
+    this.calculateSupportKPIs();
     this.renderSalesChart();
   }
 
   renderSalesChart(): void {
     const canvas = this.salesChart.nativeElement;
 
-    // Destruir gráfico existente
     if (this.salesChartInstance) {
       this.salesChartInstance.destroy();
     }
@@ -195,7 +266,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   renderSupportChart(): void {
     const canvas = this.supportChart.nativeElement;
 
-    // Destruir gráfico existente
     if (this.supportChartInstance) {
       this.supportChartInstance.destroy();
     }
