@@ -30,6 +30,7 @@ export class NavbarComponent {
   logout(): void {
     console.log('Cerrando sesión...'); // Depuración
     this.authService.logout();
+    this.router.navigate(['/login']);
   }
   
 

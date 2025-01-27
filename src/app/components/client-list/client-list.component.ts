@@ -13,6 +13,25 @@ export class ClientListComponent implements OnInit {
   clients: Client[] = [];
   errorMessage: string | null = null;
 
+  private colorPalette: string[] = [
+    '#007BFF', // Azul fuerte
+    '#28A745', // Verde
+    '#FFC107', // Amarillo
+    '#DC3545', // Rojo
+    '#6C757D', // Gris
+    '#FF5733', // Naranja suave
+    '#6610F2', // Morado
+    '#FD7E14'  // Naranja fuerte
+  ];
+
+  private predefinedCategories: string[] = [
+    'Internet',
+    'Electrodomesticos',
+    'Laptops',
+    'Farmacia',
+    'Administrador'
+  ];
+
   message: string = ''; // Mensaje del modal
   isModalVisible: boolean = false; // Controla la visibilidad del modal
   modalType: 'success' | 'error' = 'success'; // Tipo del modal (éxito o error)
@@ -77,6 +96,17 @@ export class ClientListComponent implements OnInit {
     this.isConfirmVisible = false;
     this.clientToDelete = null;
   }
+
+  isNewCategory(categoria: string): boolean {
+    return !this.predefinedCategories.includes(categoria);
+  }
+
+  generateColorFromPalette(categoria: string): string {
+    if (!categoria) return '#6C757D'; // Gris para categorías sin nombre
+    const index = categoria.length % this.colorPalette.length; // Determina el color basado en el nombre de la categoría
+    return this.colorPalette[index];
+  }
+  
 
   // Muestra el modal con el mensaje y el tipo
   showModal(message: string, type: 'success' | 'error'): void {

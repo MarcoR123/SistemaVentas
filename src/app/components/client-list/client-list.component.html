@@ -109,18 +109,21 @@
       <tr *ngFor="let client of clients" class="align-middle">
         <td>{{ client.nombre || 'N/A' }}</td>
         <td>
-          <span class="badge"
+          <span
+            class="badge"
             [ngClass]="{
-              'bg-info text-white': client.categoria === 'Internet',
+               'bg-info text-white': client.categoria === 'Internet',
               'bg-success text-white': client.categoria === 'Electrodomesticos',
               'bg-primary text-white': client.categoria === 'Laptops',
               'bg-danger text-white': client.categoria === 'Farmacia',
               'bg-dark text-white': client.categoria === 'Administrador'
             }"
+              [ngStyle]="isNewCategory(client.categoria) ? { 'background-color': generateColorFromPalette(client.categoria), 'color': 'white' } : {}"
           >
             {{ client.categoria || 'Sin categoría' }}
           </span>
-        </td>
+        </td>        
+        
         <td class="text-center">
           <div class="d-flex justify-content-center gap-2">
             <button class="btn btn-primary btn-sm" (click)="editClient(client.id)">

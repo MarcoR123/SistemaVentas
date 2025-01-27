@@ -1,14 +1,39 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { SaleService } from '../../services/sale.service';
 import { ProductService } from '../../services/product.service';
-import { ClientService } from '../../services/client.service';
 import { UserService } from '../../services/user.service';
 import { CustomerSupportService } from '../../services/customer-support.service';
-import { Chart, BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend } from 'chart.js';
+import { CustomerSupport } from '../../models/customer-support.model';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
+import {
+  Chart,
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  PieController,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, PieController, ArcElement, Tooltip, Legend);
+Chart.register(
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  PieController,
+  ArcElement,
+  Tooltip,
+  Legend
+);
 
 @Component({
   selector: 'app-dashboard',
@@ -18,57 +43,39 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, PieControl
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('salesChart') salesChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('salesByDateChart') salesByDateChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('salesByCategoryChart') salesByCategoryChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('salesByUserChart') salesByUserChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('supportChart') supportChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('map') mapContainer!: ElementRef<HTMLDivElement>;
 
   sales: any[] = [];
   products: any[] = [];
-  clients: any[] = [];
   users: any[] = [];
-  customerSupportReports: any[] = [];
-  filteredSales: any[] = [];
+  clients: any[] = [];
+  customerSupport: any[] = [];
   map: any;
 
   totalSales: number = 0;
-  totalProducts: number = 0;
-  totalUsers: number = 0;
-  totalClients: number = 0;
-  totalComplaints: number = 0;
-  totalTrainings: number = 0;
-
-  bestSeller: string = 'N/A';
-  mostSoldProduct: string = 'N/A';
-  mostComplainedProduct: string = 'N/A';
-
+  mostSoldProduct: string = '';
+  bestSeller: string = '';
+  
   selectedClientId: string = '';
   selectedUserId: string = '';
 
-  private salesChartInstance: any; // Referencia al gráfico de ventas
-  private supportChartInstance: any; // Referencia al gráfico de soporte
+  private salesChartInstance: Chart | null = null;
+  private salesByDateChartInstance: Chart | null = null;
+  private salesByCategoryChartInstance: Chart | null = null;
+  private salesByUserChartInstance: Chart | null = null;
+  private supportChartInstance: Chart | null = null;
 
-  // Declarar defaultIcon como propiedad de clase
-  defaultIcon = L.icon({
-    iconUrl: 'assets/marker-icon.png',
-    shadowUrl: 'assets/marker-shadow.png',
-    iconSize: [25, 41], // Tamaño del ícono
-    iconAnchor: [12, 41], // Punto de anclaje
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-  });
 
   constructor(
     private saleService: SaleService,
     private productService: ProductService,
-    private clientService: ClientService,
     private userService: UserService,
     private customerSupportService: CustomerSupportService
-  ) {
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'assets/marker-icon-2x.png',
-      iconUrl: 'assets/marker-icon.png',
-      shadowUrl: 'assets/marker-shadow.png',
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadAllData();
@@ -76,204 +83,106 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.renderSalesChart();
-      this.renderSupportChart();
+      this.renderAllCharts();
       this.initializeMap();
-    }, 100); // Pequeño retraso para asegurar la carga
+    }, 100);
   }
 
   loadAllData(): void {
     this.saleService.getSales().subscribe((sales) => {
       this.sales = sales;
-      this.filteredSales = sales;
-      this.calculateSalesKPIs();
-      this.renderSalesChart();
-      this.addSalesToMap();
-    });
-
-    this.productService.getProducts().subscribe((products) => {
-      this.products = products;
-      this.totalProducts = products.length;
-    });
-
-    this.clientService.getClients().subscribe((clients) => {
-      this.clients = clients;
-      this.totalClients = clients.length;
-    });
-
-    this.userService.getUsers().subscribe((users) => {
-      this.users = users;
-      this.totalUsers = users.length;
-    });
-
-    this.customerSupportService.getAllCustomerSupport().subscribe((reports) => {
-      this.customerSupportReports = reports;
-      this.calculateSupportKPIs();
+      this.updateKPIs();
       this.renderSupportChart();
-    });
-  }
-
-  initializeMap(): void {
-    this.map = L.map(this.mapContainer.nativeElement).setView([-1.8312, -78.1834], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(this.map);
-
-    const markerCluster = L.markerClusterGroup();
-    this.sales.forEach((sale) => {
-      if (sale.geolocation) {
-        const { latitude, longitude } = sale.geolocation;
-        const marker = L.marker([latitude, longitude], { icon: this.defaultIcon }).bindPopup(
-          `<strong>Cliente:</strong> ${sale.client_name || 'Desconocido'}<br>
-          <strong>Total Venta:</strong> $${sale.total_price.toFixed(2)}`
-        );
-        markerCluster.addLayer(marker);
-      }
-    });
-
-    this.map.addLayer(markerCluster);
-  }
-
-  addSalesToMap(): void {
-    this.sales.forEach((sale) => {
-      if (sale.geolocation) {
-        const { latitude, longitude } = sale.geolocation;
-        L.marker([latitude, longitude], { icon: this.defaultIcon })
-          .addTo(this.map)
-          .bindPopup(`<strong>Cliente:</strong> ${sale.client_name || 'Desconocido'}<br>
-                      <strong>Total Venta:</strong> $${sale.total_price.toFixed(2)}`);
-      }
-    });
-  }
 
   
-
-  calculateSalesKPIs(): void {
-    this.totalSales = this.filteredSales.reduce((sum, sale) => sum + sale.total_price, 0);
-
-    const salesByProduct: { [productId: string]: number } = {};
-    const salesByUser: { [userId: string]: number } = {};
-
-    this.filteredSales.forEach((sale) => {
-      const productId = sale.products[0]?.product_id;
-      const userId = sale.user_id;
-
-      salesByProduct[productId] = (salesByProduct[productId] || 0) + sale.products[0]?.quantity || 0;
-      salesByUser[userId] = (salesByUser[userId] || 0) + sale.total_price;
+      console.log("Ventas para geolocalización cargadas:", this.sales);
+  
+      // Inicializar el mapa después de que las ventas se carguen correctamente
+      this.initializeMap();
+  
+      // Renderizar gráficos
+      this.renderAllCharts();
+    });
+  
+    this.productService.getProducts().subscribe((products) => {
+      this.products = products;
+    });
+  
+    this.userService.getUsers().subscribe((users) => {
+      this.users = users;
     });
 
-    const bestProductId = Object.keys(salesByProduct).reduce((a, b) =>
-      salesByProduct[a] > salesByProduct[b] ? a : b,
-      ''
-    );
-    const bestUserId = Object.keys(salesByUser).reduce((a, b) =>
-      salesByUser[a] > salesByUser[b] ? a : b,
-      ''
-    );
-
-    this.mostSoldProduct = this.products.find((p) => p.id === bestProductId)?.name || 'Desconocido';
-    this.bestSeller = this.users.find((u) => u.id === bestUserId)?.name || 'Desconocido';
-  }
-
-  calculateSupportKPIs(): void {
-    const complaintsByProduct: { [productId: string]: number } = {};
-    this.totalComplaints = 0;
-    this.totalTrainings = 0;
-
-    const filteredSupportReports = this.customerSupportReports.filter((report) => {
-      const matchesClient = !this.selectedClientId || report.client_id === this.selectedClientId;
-      const matchesUser = !this.selectedUserId || report.user_id === this.selectedUserId;
-      return matchesClient && matchesUser;
+    this.customerSupportService.getAllCustomerSupport().subscribe((support) => {
+      this.customerSupport = support;
+      console.log('Datos de soporte al cliente:', this.customerSupport);
     });
-
-    filteredSupportReports.forEach((report) => {
-      if (report.complaint) {
-        this.totalComplaints++;
-        const productId = report.product_id;
-        complaintsByProduct[productId] = (complaintsByProduct[productId] || 0) + 1;
-      }
-      if (report.training) {
-        this.totalTrainings++;
-      }
-    });
-
-    const mostComplainedProductId = Object.keys(complaintsByProduct).reduce((a, b) =>
-      complaintsByProduct[a] > complaintsByProduct[b] ? a : b,
-      ''
-    );
-
-    this.mostComplainedProduct = this.products.find((p) => p.id === mostComplainedProductId)?.name || 'Desconocido';
   }
 
-  filterData(): void {
-    this.filteredSales = this.sales.filter((sale) => {
-      const matchesClient = !this.selectedClientId || sale.products[0]?.clientId === this.selectedClientId;
-      const matchesUser = !this.selectedUserId || sale.user_id === this.selectedUserId;
-      return matchesClient && matchesUser;
-    });
 
-    this.calculateSalesKPIs();
-    this.renderSalesChart();
-  }
-
-  resetFilters(): void {
-    this.selectedClientId = '';
-    this.selectedUserId = '';
-    this.filteredSales = this.sales;
-    this.calculateSalesKPIs();
-    this.calculateSupportKPIs();
-    this.renderSalesChart();
-  }
-
-  renderSalesChart(): void {
-    const canvas = this.salesChart.nativeElement;
-
-    if (this.salesChartInstance) {
-      this.salesChartInstance.destroy();
+  destroyChart(chartInstance: Chart | null): void {
+    if (chartInstance) {
+      chartInstance.destroy();
     }
+  }
 
-    const salesByClient: { [key: string]: number } = {};
+  renderAllCharts(): void {
+    this.renderSalesChart();
+    this.renderSalesByDateChart();
+    this.renderSalesByCategoryChart();
+    this.renderSalesByUserChart();
+    this.renderSupportChart();
+  }
 
-    this.filteredSales.forEach((sale) => {
-      const clientName = sale.products[0]?.client_name || 'Desconocido';
-      salesByClient[clientName] = (salesByClient[clientName] || 0) + sale.total_price;
+  updateKPIs(): void {
+    // Total ventas
+    this.totalSales = this.sales.reduce((total, sale) => total + sale.total_price, 0);
+
+    // Producto más vendido
+    const productCount: { [key: string]: number } = {};
+    this.sales.forEach((sale) => {
+      sale.products.forEach((product: any) => {
+        productCount[product.product_name] =
+          (productCount[product.product_name] || 0) + product.quantity;
+      });
     });
+    this.mostSoldProduct = Object.keys(productCount).reduce((a, b) =>
+      productCount[a] > productCount[b] ? a : b
+    );
 
-    const clientNames = Object.keys(salesByClient);
-    const totalAmounts = Object.values(salesByClient);
-
-    this.salesChartInstance = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: clientNames,
-        datasets: [
-          {
-            label: 'Ventas por Cliente',
-            data: totalAmounts,
-            backgroundColor: '#4285F4',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true },
-        },
-      },
+    // Mejor vendedor
+    const sellerCount: { [key: string]: number } = {};
+    this.sales.forEach((sale) => {
+      sellerCount[sale.user_name] =
+        (sellerCount[sale.user_name] || 0) + sale.total_price;
     });
+    this.bestSeller = Object.keys(sellerCount).reduce((a, b) =>
+      sellerCount[a] > sellerCount[b] ? a : b
+    );
   }
 
   renderSupportChart(): void {
-    const canvas = this.supportChart.nativeElement;
-
     if (this.supportChartInstance) {
       this.supportChartInstance.destroy();
     }
-
-    const complaintsCount = this.totalComplaints;
-    const trainingCount = this.totalTrainings;
-
-    this.supportChartInstance = new Chart(canvas, {
+  
+    const canvas = this.supportChart.nativeElement;
+    const context = canvas.getContext('2d');
+  
+    if (!context) {
+      console.error('No se pudo obtener el contexto 2D del canvas.');
+      return;
+    }
+  
+    // Contar las quejas y los entrenamientos
+    const complaintsCount = this.customerSupport.filter(
+      (support) => support.complaint === true
+    ).length;
+    const trainingCount = this.customerSupport.filter(
+      (support) => support.training === true
+    ).length;
+  
+    // Crear el gráfico
+    this.supportChartInstance = new Chart(context, {
       type: 'pie',
       data: {
         labels: ['Quejas', 'Entrenamientos'],
@@ -292,4 +201,206 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
     });
   }
+  
+  applyFilters(): void {
+    const filteredSales = this.sales.filter((sale) => {
+      const matchesClient = this.selectedClientId === '' || sale.products.some((p: any) => p.clientId === this.selectedClientId);
+      const matchesUser =
+        this.selectedUserId === '' || sale.user_id === this.selectedUserId;
+      return matchesClient && matchesUser;
+    });
+
+    console.log('Ventas filtradas:', filteredSales);
+    // Actualizar KPIs o gráficos según los filtros
+  }
+
+  renderSalesChart(): void {
+    this.destroyChart(this.salesChartInstance);
+
+    const canvas = this.salesChart.nativeElement;
+    const salesByClient: { [key: string]: number } = {};
+
+    this.sales.forEach((sale) => {
+      const clientName = sale.products[0]?.client_name || 'Desconocido';
+      salesByClient[clientName] = (salesByClient[clientName] || 0) + sale.total_price;
+    });
+
+    this.salesChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(salesByClient),
+        datasets: [
+          {
+            label: 'Ventas por Cliente',
+            data: Object.values(salesByClient),
+            backgroundColor: '#4285F4',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } },
+      },
+    });
+  }
+
+  renderSalesByDateChart(): void {
+    this.destroyChart(this.salesByDateChartInstance);
+  
+    const canvas = this.salesByDateChart.nativeElement;
+    const salesByDate: { [date: string]: number } = {};
+  
+    // Agrupar las ventas por fecha
+    this.sales.forEach((sale) => {
+      const date = new Date(sale.date).toISOString().split('T')[0];
+      salesByDate[date] = (salesByDate[date] || 0) + sale.total_price;
+    });
+  
+    // Ordenar las fechas cronológicamente
+    const sortedDates = Object.keys(salesByDate).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  
+    this.salesByDateChartInstance = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: sortedDates, // Usar las fechas ordenadas
+        datasets: [
+          {
+            label: 'Ventas por Fecha',
+            data: sortedDates.map((date) => salesByDate[date]), // Obtener los valores en el orden correcto
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            tension: 0.3,
+            pointRadius: 5,
+            pointBackgroundColor: '#4CAF50',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Fecha',
+            },
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Ventas ($)',
+            },
+          },
+        },
+      },
+    });
+  }
+  
+
+  renderSalesByCategoryChart(): void {
+    this.destroyChart(this.salesByCategoryChartInstance);
+
+    const canvas = this.salesByCategoryChart.nativeElement;
+    const salesByCategory: { [category: string]: number } = {};
+
+    this.sales.forEach((sale) => {
+      sale.products.forEach((product: any) => {
+        const category = product.client_category || 'Sin categoría';
+        salesByCategory[category] = (salesByCategory[category] || 0) + product.price * product.quantity;
+      });
+    });
+
+    this.salesByCategoryChartInstance = new Chart(canvas, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(salesByCategory),
+        datasets: [
+          {
+            data: Object.values(salesByCategory),
+            backgroundColor: ['#FF6347', '#FFD700', '#4CAF50', '#4285F4'],
+          },
+        ],
+      },
+      options: { responsive: true },
+    });
+  }
+
+
+
+  renderSalesByUserChart(): void {
+    this.destroyChart(this.salesByUserChartInstance);
+
+    const canvas = this.salesByUserChart.nativeElement;
+    const salesByUser: { [user: string]: number } = {};
+
+    this.sales.forEach((sale) => {
+      const userName = sale.user_name || 'Desconocido';
+      salesByUser[userName] = (salesByUser[userName] || 0) + sale.total_price;
+    });
+
+    this.salesByUserChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(salesByUser),
+        datasets: [
+          {
+            label: 'Ventas por Usuario',
+            data: Object.values(salesByUser),
+            backgroundColor: '#4285F4',
+          },
+        ],
+      },
+      options: { responsive: true },
+    });
+  }
+
+  initializeMap(): void {
+    if (!this.sales || this.sales.length === 0) {
+      console.warn("No hay ventas disponibles para mostrar en el mapa.");
+      return;
+    }
+  
+    this.map = L.map(this.mapContainer.nativeElement).setView([-1.8312, -78.1834], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(this.map);
+  
+    const markerCluster = L.markerClusterGroup();
+  
+    console.log("Ventas para el mapa:", this.sales);
+  
+    // Definimos un ícono personalizado
+    const customIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448528.png', // Cambia la URL por el ícono que prefieras
+      iconSize: [32, 32], // Tamaño del ícono
+      iconAnchor: [16, 32], // Punto donde se "ancla" el ícono en las coordenadas
+      popupAnchor: [0, -32], // Punto donde se abre el popup
+    });
+  
+    this.sales.forEach((sale) => {
+      if (sale.geolocation && sale.geolocation.latitude !== 0 && sale.geolocation.longitude !== 0) {
+        const { latitude, longitude } = sale.geolocation;
+  
+        console.log(`Venta procesada: ID=${sale.id}, Coordenadas=(${latitude}, ${longitude})`);
+  
+        const marker = L.marker([latitude, longitude], { icon: customIcon }).bindPopup(
+          `<strong>Cliente:</strong> ${sale.products[0]?.client_name || 'Desconocido'}<br>
+           <strong>Total Venta:</strong> $${sale.total_price.toFixed(2)}`
+        );
+        markerCluster.addLayer(marker);
+      } else {
+        console.warn(`Venta sin geolocalización válida: ID=${sale.id}`);
+      }
+    });
+  
+    this.map.addLayer(markerCluster);
+  }
+  
+  
 }

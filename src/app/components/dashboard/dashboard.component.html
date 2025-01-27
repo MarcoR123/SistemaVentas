@@ -1,8 +1,13 @@
-<div class="container py-4">
-  <h2 class="text-center mb-4">Dashboard de Ventas y Soporte al Cliente</h2>
+<div class="container mt-5">
+  <h2 class="text-center text-primary">Dashboard</h2>
 
-  <!-- Tarjetas de KPIs en una sola fila -->
-  <div class="row row-cols-1 row-cols-md-4 g-4">
+  <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<!-- Tarjetas de KPIs -->
+<div class="row row-cols-1 row-cols-md-4 g-4">
     <div class="col">
       <div class="card bg-primary text-white shadow">
         <div class="card-body">
@@ -27,44 +32,68 @@
         </div>
       </div>
     </div>
-    
   </div>
 
   <!-- Filtros -->
   <div class="row mb-4 mt-4">
     <div class="col-md-6">
       <label for="clientFilter" class="form-label">Filtrar por Cliente:</label>
-      <select id="clientFilter" class="form-select" [(ngModel)]="selectedClientId">
+      <select
+        id="clientFilter"
+        class="form-select"
+        [(ngModel)]="selectedClientId"
+        (change)="applyFilters()"
+      >
         <option value="">Todos</option>
         <option *ngFor="let client of clients" [value]="client.id">{{ client.nombre }}</option>
       </select>
     </div>
     <div class="col-md-6">
       <label for="userFilter" class="form-label">Filtrar por Vendedor:</label>
-      <select id="userFilter" class="form-select" [(ngModel)]="selectedUserId">
+      <select
+        id="userFilter"
+        class="form-select"
+        [(ngModel)]="selectedUserId"
+        (change)="applyFilters()"
+      >
         <option value="">Todos</option>
         <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
       </select>
     </div>
   </div>
-
-  <div class="d-flex justify-content-end mb-4">
-    <button class="btn btn-primary me-2" (click)="filterData()">Aplicar Filtros</button>
-    <button class="btn btn-secondary" (click)="resetFilters()">Limpiar Filtros</button>
-  </div>
-
-  
+<!-- Gráfico de soporte -->
+<div class="col-md-6">
+  <h4 class="text-center text-danger">Quejas vs Entrenamientos</h4>
+  <canvas #supportChart></canvas>
+</div>
 
 
-  <!-- Gráficos -->
-  <div class="row">
+  <div class="row mt-4">
     <div class="col-md-6">
-      <h4 class="text-center">Ventas por Cliente</h4>
-      <canvas #salesChart width="400" height="300"></canvas>
+      <h4 class="text-center text-success">Ventas por Cliente</h4>
+      <canvas #salesChart></canvas>
     </div>
     <div class="col-md-6">
-      <h4 class="text-center">Quejas vs Entrenamientos</h4>
-      <canvas #supportChart width="400" height="300"></canvas>
+      <h4 class="text-center text-info">Ventas por Fecha</h4>
+      <canvas #salesByDateChart></canvas>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <h4 class="text-center text-warning">Ventas por Categoría</h4>
+      <canvas #salesByCategoryChart></canvas>
+    </div>
+    <div class="col-md-6">
+      <h4 class="text-center text-primary">Ventas por Usuario</h4>
+      <canvas #salesByUserChart></canvas>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <h4 class="text-center text-secondary">Mapa de Ventas</h4>
+      <div #map style="height: 400px;"></div>
     </div>
   </div>
 </div>

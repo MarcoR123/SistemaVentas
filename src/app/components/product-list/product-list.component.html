@@ -14,6 +14,7 @@
   </div>
 
   <!-- Tabla de Productos -->
+  <div class="table-responsive">
   <table class="table table-hover table-bordered mt-3 custom-table shadow-sm">
     <thead class="thead-light bg-light text-center">
       <tr>
@@ -33,14 +34,14 @@
             *ngIf="product.image"
             [src]="product.image"
             alt="{{ product.name }}"
-            class="img-thumbnail rounded shadow-sm"
-            style="width: 150px; height: 150px; object-fit: cover;"
+            class="img-thumbnail"
+            
           />
           <span *ngIf="!product.image" class="text-muted">Sin imagen</span>
         </td>
         <td class="fw-bold">{{ product.name }}</td>
         <td>{{ product.description }}</td>
-        <td>{{ product.price | currency: 'USD': true }}</td>
+        <td>{{ product.price | currency: 'USD': 'symbol' }}</td>
         <td>{{ product.clientName }}</td>
         <td>{{ product.clientCategory }}</td>
         <td class="text-center">
@@ -56,6 +57,7 @@
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <!-- Modal de Confirmación -->

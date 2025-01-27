@@ -1,0 +1,9 @@
+[
+    {
+      "origin": ["https://sistemaventasalesland.netlify.app"],
+      "method": ["GET", "PATCH", "POST", "PUT", "DELETE", "OPTIONS"],
+      "responseHeader": ["Content-Type", "Authorization"],
+      "maxAgeSeconds": 3600
+    }
+  ]
+  
