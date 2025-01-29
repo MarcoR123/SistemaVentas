@@ -2,12 +2,12 @@
   <h2 class="text-center text-primary">Dashboard</h2>
 
   <link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
-<!-- Tarjetas de KPIs -->
-<div class="row row-cols-1 row-cols-md-4 g-4">
+  <!-- Tarjetas de KPIs -->
+  <div class="row row-cols-1 row-cols-md-4 g-4">
     <div class="col">
       <div class="card bg-primary text-white shadow">
         <div class="card-body">
@@ -34,66 +34,43 @@
     </div>
   </div>
 
-  <!-- Filtros -->
-  <div class="row mb-4 mt-4">
+  
+  </div>
+
+  <!-- Gráficos -->
+  <div class="row mt-4">
     <div class="col-md-6">
-      <label for="clientFilter" class="form-label">Filtrar por Cliente:</label>
-      <select
-        id="clientFilter"
-        class="form-select"
-        [(ngModel)]="selectedClientId"
-        (change)="applyFilters()"
-      >
-        <option value="">Todos</option>
-        <option *ngFor="let client of clients" [value]="client.id">{{ client.nombre }}</option>
-      </select>
+      <h4 class="text-center text-danger">Quejas vs Entrenamientos</h4>
+      <canvas #supportChart style="width: 100%; height: 400px;"></canvas>
     </div>
+
     <div class="col-md-6">
-      <label for="userFilter" class="form-label">Filtrar por Vendedor:</label>
-      <select
-        id="userFilter"
-        class="form-select"
-        [(ngModel)]="selectedUserId"
-        (change)="applyFilters()"
-      >
-        <option value="">Todos</option>
-        <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
-      </select>
+      <h4 class="text-center text-warning">Ventas por Categoría</h4>
+      <canvas #salesByCategoryChart style="width: 100%; height: 400px;"></canvas>
     </div>
   </div>
-<!-- Gráfico de soporte -->
-<div class="col-md-6">
-  <h4 class="text-center text-danger">Quejas vs Entrenamientos</h4>
-  <canvas #supportChart></canvas>
-</div>
 
 
   <div class="row mt-4">
     <div class="col-md-6">
       <h4 class="text-center text-success">Ventas por Cliente</h4>
-      <canvas #salesChart></canvas>
+      <canvas #salesChart style="width: 100%; height: 400px;"></canvas>
     </div>
+
     <div class="col-md-6">
       <h4 class="text-center text-info">Ventas por Fecha</h4>
-      <canvas #salesByDateChart></canvas>
+      <canvas #salesByDateChart style="width: 100%; height: 400px;"></canvas>
     </div>
   </div>
 
-  <div class="row mt-4">
-    <div class="col-md-6">
-      <h4 class="text-center text-warning">Ventas por Categoría</h4>
-      <canvas #salesByCategoryChart></canvas>
-    </div>
-    <div class="col-md-6">
+  <div class="row mt-4 justify-content-center">
+    <div class="col-md-6 d-flex flex-column align-items-center">
       <h4 class="text-center text-primary">Ventas por Usuario</h4>
-      <canvas #salesByUserChart></canvas>
+      <canvas #salesByUserChart style="width: 100%; height: 400px;"></canvas>
     </div>
-  </div>
-
-  <div class="row mt-4">
-    <div class="col-12">
+    <div class="col-md-6 d-flex flex-column align-items-center">
       <h4 class="text-center text-secondary">Mapa de Ventas</h4>
-      <div #map style="height: 400px;"></div>
+      <div #map style="height: 400px; width: 100%;"></div>
     </div>
   </div>
-</div>
+  

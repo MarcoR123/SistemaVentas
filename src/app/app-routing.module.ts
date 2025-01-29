@@ -22,6 +22,12 @@ const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [AuthGuard],
+    data: { role: ['Administrador', 'Supervisor'] }, // Permitido para Administrador y Supervisor
+  },
+  {
     path: 'products',
     component: ProductListComponent,
     canActivate: [AuthGuard],
@@ -96,12 +102,6 @@ const routes: Routes = [
   {
     path: 'reports',
     component: ReportsComponent,
-    canActivate: [AuthGuard],
-    data: { role: ['Administrador', 'Supervisor'] }, // Permitido para Administrador y Supervisor
-  },
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
     canActivate: [AuthGuard],
     data: { role: ['Administrador', 'Supervisor'] }, // Permitido para Administrador y Supervisor
   },

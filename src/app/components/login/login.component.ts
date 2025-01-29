@@ -38,7 +38,7 @@ export class LoginComponent {
         localStorage.setItem('token', response.token);
         localStorage.setItem('role', response.role);
         localStorage.setItem('clientId', response.clientId);
-        this.router.navigate(['/products']);
+        this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         console.error('Error de login:', error);

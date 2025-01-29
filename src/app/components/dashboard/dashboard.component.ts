@@ -20,6 +20,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { environment } from '../../../environments/environment';
 
 Chart.register(
   BarController,
@@ -83,16 +84,28 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.renderAllCharts();
-      this.initializeMap();
+        try {
+          if (environment.production) {
+            console.warn('Mapa deshabilitado temporalmente en producción.');
+        } else {
+            this.initializeMap();
+        }
+        } catch (error) {
+            console.error("Error al inicializar el mapa:", error);
+        }
     }, 100);
-  }
+}
+
 
   loadAllData(): void {
     this.saleService.getSales().subscribe((sales) => {
       this.sales = sales;
       this.updateKPIs();
       this.renderSupportChart();
+      this.renderSalesByCategoryChart();
+      this.renderSalesByUserChart();
+      this.renderSalesByDateChart();
+      this.renderSalesChart();
 
   
       console.log("Ventas para geolocalización cargadas:", this.sales);
@@ -126,12 +139,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   renderAllCharts(): void {
-    this.renderSalesChart();
-    this.renderSalesByDateChart();
-    this.renderSalesByCategoryChart();
-    this.renderSalesByUserChart();
-    this.renderSupportChart();
-  }
+    try {
+        this.renderSalesChart();
+        this.renderSalesByDateChart();
+        this.renderSalesByCategoryChart();
+        this.renderSalesByUserChart();
+        this.renderSupportChart(); // Este podría depender de datos cargados
+    } catch (error) {
+        console.error("Error al renderizar los gráficos:", error);
+    }
+}
+
 
   updateKPIs(): void {
     // Total ventas
@@ -215,17 +233,25 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   renderSalesChart(): void {
-    this.destroyChart(this.salesChartInstance);
-
+    if (this.salesChartInstance) {
+      this.salesChartInstance.destroy();
+    }
+  
     const canvas = this.salesChart.nativeElement;
+    const context = canvas.getContext('2d');
+  
+    if (!context) {
+      console.error('No se pudo obtener el contexto 2D del canvas de Ventas por Cliente.');
+      return;
+    }
+  
     const salesByClient: { [key: string]: number } = {};
-
     this.sales.forEach((sale) => {
       const clientName = sale.products[0]?.client_name || 'Desconocido';
       salesByClient[clientName] = (salesByClient[clientName] || 0) + sale.total_price;
     });
-
-    this.salesChartInstance = new Chart(canvas, {
+  
+    this.salesChartInstance = new Chart(context, {
       type: 'bar',
       data: {
         labels: Object.keys(salesByClient),
@@ -239,34 +265,56 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
       options: {
         responsive: true,
-        scales: { y: { beginAtZero: true } },
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Ventas ($)',
+            },
+          },
+        },
       },
     });
   }
+  
 
   renderSalesByDateChart(): void {
-    this.destroyChart(this.salesByDateChartInstance);
+    if (this.salesByDateChartInstance) {
+      this.salesByDateChartInstance.destroy();
+    }
   
     const canvas = this.salesByDateChart.nativeElement;
-    const salesByDate: { [date: string]: number } = {};
+    const context = canvas.getContext('2d');
   
-    // Agrupar las ventas por fecha
+    if (!context) {
+      console.error('No se pudo obtener el contexto 2D del canvas de Ventas por Fecha.');
+      return;
+    }
+  
+    const salesByDate: { [date: string]: number } = {};
     this.sales.forEach((sale) => {
       const date = new Date(sale.date).toISOString().split('T')[0];
       salesByDate[date] = (salesByDate[date] || 0) + sale.total_price;
     });
   
-    // Ordenar las fechas cronológicamente
-    const sortedDates = Object.keys(salesByDate).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    const sortedDates = Object.keys(salesByDate).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime()
+    );
   
-    this.salesByDateChartInstance = new Chart(canvas, {
+    this.salesByDateChartInstance = new Chart(context, {
       type: 'line',
       data: {
-        labels: sortedDates, // Usar las fechas ordenadas
+        labels: sortedDates,
         datasets: [
           {
             label: 'Ventas por Fecha',
-            data: sortedDates.map((date) => salesByDate[date]), // Obtener los valores en el orden correcto
+            data: sortedDates.map((date) => salesByDate[date]),
             borderColor: '#4CAF50',
             backgroundColor: 'rgba(76, 175, 80, 0.2)',
             tension: 0.3,
@@ -279,7 +327,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         responsive: true,
         plugins: {
           legend: {
-            display: true,
             position: 'top',
           },
         },
@@ -302,21 +349,30 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
   
+  
 
   renderSalesByCategoryChart(): void {
-    this.destroyChart(this.salesByCategoryChartInstance);
-
+    if (this.salesByCategoryChartInstance) {
+      this.salesByCategoryChartInstance.destroy();
+    }
+  
     const canvas = this.salesByCategoryChart.nativeElement;
+    const context = canvas.getContext('2d');
+  
+    if (!context) {
+      console.error('No se pudo obtener el contexto 2D del canvas de Ventas por Categoría.');
+      return;
+    }
+  
     const salesByCategory: { [category: string]: number } = {};
-
     this.sales.forEach((sale) => {
       sale.products.forEach((product: any) => {
         const category = product.client_category || 'Sin categoría';
         salesByCategory[category] = (salesByCategory[category] || 0) + product.price * product.quantity;
       });
     });
-
-    this.salesByCategoryChartInstance = new Chart(canvas, {
+  
+    this.salesByCategoryChartInstance = new Chart(context, {
       type: 'pie',
       data: {
         labels: Object.keys(salesByCategory),
@@ -327,24 +383,40 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           },
         ],
       },
-      options: { responsive: true },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+        },
+      },
     });
   }
+  
 
 
 
   renderSalesByUserChart(): void {
-    this.destroyChart(this.salesByUserChartInstance);
-
+    if (this.salesByUserChartInstance) {
+      this.salesByUserChartInstance.destroy();
+    }
+  
     const canvas = this.salesByUserChart.nativeElement;
+    const context = canvas.getContext('2d');
+  
+    if (!context) {
+      console.error('No se pudo obtener el contexto 2D del canvas de Ventas por Usuario.');
+      return;
+    }
+  
     const salesByUser: { [user: string]: number } = {};
-
     this.sales.forEach((sale) => {
       const userName = sale.user_name || 'Desconocido';
       salesByUser[userName] = (salesByUser[userName] || 0) + sale.total_price;
     });
-
-    this.salesByUserChartInstance = new Chart(canvas, {
+  
+    this.salesByUserChartInstance = new Chart(context, {
       type: 'bar',
       data: {
         labels: Object.keys(salesByUser),
@@ -356,25 +428,42 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           },
         ],
       },
-      options: { responsive: true },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Ventas ($)',
+            },
+          },
+        },
+      },
     });
   }
+  
 
   initializeMap(): void {
     if (!this.sales || this.sales.length === 0) {
       console.warn("No hay ventas disponibles para mostrar en el mapa.");
       return;
     }
-  
+
     this.map = L.map(this.mapContainer.nativeElement).setView([-1.8312, -78.1834], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.map);
-  
+
     const markerCluster = L.markerClusterGroup();
-  
+
     console.log("Ventas para el mapa:", this.sales);
-  
+
     // Definimos un ícono personalizado
     const customIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448528.png', // Cambia la URL por el ícono que prefieras
@@ -382,13 +471,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       iconAnchor: [16, 32], // Punto donde se "ancla" el ícono en las coordenadas
       popupAnchor: [0, -32], // Punto donde se abre el popup
     });
-  
+
     this.sales.forEach((sale) => {
       if (sale.geolocation && sale.geolocation.latitude !== 0 && sale.geolocation.longitude !== 0) {
         const { latitude, longitude } = sale.geolocation;
-  
+
         console.log(`Venta procesada: ID=${sale.id}, Coordenadas=(${latitude}, ${longitude})`);
-  
+
         const marker = L.marker([latitude, longitude], { icon: customIcon }).bindPopup(
           `<strong>Cliente:</strong> ${sale.products[0]?.client_name || 'Desconocido'}<br>
            <strong>Total Venta:</strong> $${sale.total_price.toFixed(2)}`
@@ -398,7 +487,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         console.warn(`Venta sin geolocalización válida: ID=${sale.id}`);
       }
     });
-  
+
     this.map.addLayer(markerCluster);
   }
   
